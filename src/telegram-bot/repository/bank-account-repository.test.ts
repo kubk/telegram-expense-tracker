@@ -1,5 +1,5 @@
-import { fixtures, useRefreshDb } from '../utils/use-refresh-db';
-import { bankRepository } from '../container';
+import { fixtures, useRefreshDb } from '../../utils/use-refresh-db';
+import { bankRepository } from '../../container';
 
 useRefreshDb();
 

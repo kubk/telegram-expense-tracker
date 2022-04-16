@@ -7,7 +7,7 @@ import {
 import {
   calcPaginationOffset,
   Pagination,
-} from '../utils/calc-pagination-offset';
+} from '../../utils/calc-pagination-offset';
 import { DateTime } from 'luxon';
 import { v4 } from 'uuid';
 

@@ -1,8 +1,8 @@
 import { PrismaClient } from '@prisma/client';
-import { UserRepository } from './telegram-bot/user-repository';
-import { FamilyRepository } from './telegram-bot/family-repository';
-import { BankAccountRepository } from './telegram-bot/bank-account-repository';
-import { TransactionRepository } from './telegram-bot/transaction-repository';
+import { UserRepository } from './telegram-bot/repository/user-repository';
+import { FamilyRepository } from './telegram-bot/repository/family-repository';
+import { BankAccountRepository } from './telegram-bot/repository/bank-account-repository';
+import { TransactionRepository } from './telegram-bot/repository/transaction-repository';
 
 export const config = {
   debug: false,

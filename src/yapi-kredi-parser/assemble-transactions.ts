@@ -1,4 +1,4 @@
-import { Transaction } from '../types';
+import { Transaction } from './types';
 import { ITEM_SEPARATOR } from './constants';
 import { parseMoney } from './parse-money';
 import { parseDate } from './parse.date';

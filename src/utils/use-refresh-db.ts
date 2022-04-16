@@ -2,6 +2,8 @@ import { prisma } from '../container';
 import { Currency } from '@prisma/client';
 import { execPromise } from './exec-promise';
 import { DateTime } from 'luxon';
+import { getEnvSafe } from './get-env-safe';
+import { UserState } from '../telegram-bot/user-state';
 
 jest.setTimeout(10000);
 
@@ -22,8 +24,8 @@ export const useRefreshDb = () => {
   });
 
   beforeEach(async () => {
-    await execPromise(`dropdb yapi`);
-    await execPromise(`createdb yapi`);
+    await execPromise(`dropdb ${getEnvSafe('DATABASE_NAME')}`);
+    await execPromise(`createdb ${getEnvSafe('DATABASE_NAME')}`);
     await execPromise(`npx prisma db push`);
 
     prisma.$connect();
@@ -36,8 +38,8 @@ export const useRefreshDb = () => {
               id: fixtures.users.user_1,
               telegramProfile: {
                 create: {
-                  telegramId: 'test_user_1',
-                  state: 'initial',
+                  telegramId: 1,
+                  state: { type: 'initial' },
                 },
               },
             },
@@ -45,8 +47,8 @@ export const useRefreshDb = () => {
               id: fixtures.users.user_2,
               telegramProfile: {
                 create: {
-                  telegramId: 'test_user_2',
-                  state: 'initial',
+                  telegramId: 2,
+                  state: { type: 'initial' },
                 },
               },
             },

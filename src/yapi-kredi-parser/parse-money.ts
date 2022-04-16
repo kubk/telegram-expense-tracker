@@ -1,4 +1,4 @@
-import { Currency } from '../types';
+import { Currency } from './types';
 
 const parseCurrency = (currencyString: string): Currency => {
   switch (currencyString) {

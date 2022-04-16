@@ -30,8 +30,8 @@ model User {
 
 model TelegramProfile {
   id         String @id @default(uuid())
-  telegramId String
-  state      String
+  telegramId Int
+  state      Json
   userId     String @unique
   user       User   @relation(fields: [userId], references: [id])
 }

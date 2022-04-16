@@ -1,5 +1,5 @@
-import { fixtures, useRefreshDb } from '../utils/use-refresh-db';
-import { transactionRepository } from '../container';
+import { fixtures, useRefreshDb } from '../../utils/use-refresh-db';
+import { transactionRepository } from '../../container';
 import { DateTime } from 'luxon';
 
 useRefreshDb();
