@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Currency {
+  TRY
+  USD
+}
+
+enum TransactionSource {
+  IMPORTED
+  MANUAL
+}
+
+model User {
+  id              String           @id @default(uuid())
+  createdAt       DateTime         @default(now())
+  telegramProfile TelegramProfile?
+  familyId        String
+  family          Family           @relation(fields: [familyId], references: [id])
+}
+
+model TelegramProfile {
+  id         String @id @default(uuid())
+  telegramId String
+  state      String
+  userId     String @unique
+  user       User   @relation(fields: [userId], references: [id])
+}
+
+model Family {
+  id           String        @id @default(uuid())
+  users        User[]
+  bankAccounts BankAccount[]
+}
+
+model BankAccount {
+  id           String        @id @default(uuid())
+  currency     Currency
+  name         String
+  familyId     String
+  family       Family        @relation(fields: [familyId], references: [id])
+  transactions Transaction[]
+}
+
+model Transaction {
+  id            String            @id @default(uuid())
+  createdAt     DateTime
+  source        TransactionSource @default(IMPORTED)
+  amount        Int
+  currency      Currency
+  title         String
+  info          String
+  bankAccountId String
+  bankAccount   BankAccount       @relation(fields: [bankAccountId], references: [id])
+}
