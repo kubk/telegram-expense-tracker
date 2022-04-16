@@ -1,9 +1,15 @@
-import { PrismaClient, Transaction, TransactionSource } from '@prisma/client';
+import {
+  Currency,
+  PrismaClient,
+  Transaction,
+  TransactionSource,
+} from '@prisma/client';
 import {
   calcPaginationOffset,
   Pagination,
 } from '../utils/calc-pagination-offset';
 import { DateTime } from 'luxon';
+import { v4 } from 'uuid';
 
 export class TransactionRepository {
   constructor(private prisma: PrismaClient) {}
@@ -23,6 +29,7 @@ left join "User" u on "Family".id = u."familyId"
 left join "BankAccount" ba on "Family".id = ba."familyId"
 left join "Transaction" t on ba.id = t."bankAccountId"
 where u.id = ${userId} and ba.id = ${bankAccountId}
+order by t."createdAt" desc
 offset ${offset} limit ${perPage}
     `;
   }
@@ -35,11 +42,13 @@ offset ${offset} limit ${perPage}
   }) {
     const { userId, bankAccountId, dateFrom, dateTo } = options;
 
-    const rows = await this.prisma.$queryRaw<Array<{
-      outcome: number;
-      income: number;
-      difference: number;
-    }>>`
+    const rows = await this.prisma.$queryRaw<
+      Array<{
+        outcome: number;
+        income: number;
+        difference: number;
+      }>
+    >`
 select
   sum(case when T.amount < 0 then t.amount else 0 end) as outcome,
   sum(case when T.amount > 0 then t.amount else 0 end) as income,
@@ -61,5 +70,24 @@ group by ba.currency
     }
 
     return rows[0];
+  }
+
+  createManualTransaction(input: {
+    bankAccountId: string;
+    amount: number;
+    currency: Currency;
+    title: string;
+  }) {
+    return this.prisma.transaction.create({
+      data: {
+        createdAt: new Date(),
+        bankAccountId: input.bankAccountId,
+        info: '',
+        amount: input.amount,
+        currency: input.currency,
+        source: TransactionSource.MANUAL,
+        title: input.title,
+      },
+    });
   }
 }

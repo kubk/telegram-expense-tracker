@@ -1,7 +1,7 @@
 import { Transaction } from '../types';
 import { ITEM_SEPARATOR } from './constants';
 import { parseMoney } from './parse-money';
-import {parseDate} from "./parse.date";
+import { parseDate } from './parse.date';
 
 type TemporaryTransaction = {
   createdAt: Date;

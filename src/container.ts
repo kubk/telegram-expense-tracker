@@ -7,8 +7,8 @@ import { TransactionRepository } from './telegram-bot/transaction-repository';
 export const config = {
   debug: false,
   pagination: {
-    perPage: 10
-  }
+    perPage: 10,
+  },
 };
 
 export const prisma = new PrismaClient({
