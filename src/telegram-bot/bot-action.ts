@@ -7,6 +7,11 @@ export enum BotAction {
   BankAccountRemove = 'bank_account_remove',
   TransactionAddManual = 'transaction_add_manual',
   UploadBankStatement = 'upload_bank_statement',
+  SelectBankAccount = 'select_bank_account',
+  StatisticMonths = 'statistic_months',
+  StatisticWeeks = 'statistic_weeks',
+  SelectStatisticsMonth = 'select_statistics_month',
+  SelectStatisticsWeek = 'select_statistics_month',
 }
 
 export const humanizeAction = (action: BotAction) => {
@@ -23,6 +28,16 @@ export const humanizeAction = (action: BotAction) => {
       return '❌ Remove bank account';
     case BotAction.MainMenu:
       return 'Main menu';
+    case BotAction.SelectBankAccount:
+      return 'Select bank account';
+    case BotAction.StatisticMonths:
+      return '📈 Monthly statistics';
+    case BotAction.StatisticWeeks:
+      return '📈 Weekly statistics';
+    case BotAction.SelectStatisticsMonth:
+      return 'Select statistics of a month';
+    case BotAction.SelectStatisticsWeek:
+      return 'Select statistics of a week';
     default:
       throw new UnreachableCaseError(action);
   }

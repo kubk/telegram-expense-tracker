@@ -5,12 +5,12 @@ export class BankAccountRepository {
 
   async getUserBankAccounts(userId: string) {
     const result = await this.prisma.$queryRaw<BankAccount[]>`
-select ba.*
-from "Family"
-left join "User" u on "Family".id = u."familyId"
-left join "BankAccount" ba on "Family".id = ba."familyId"
-where u.id = ${userId}
-`;
+      select ba.*
+      from "Family"
+             left join "User" u on "Family".id = u."familyId"
+             left join "BankAccount" ba on "Family".id = ba."familyId"
+      where u.id = ${userId}
+    `;
 
     // Why does prisma return 1 empty row when there are no results?
     if (result.length === 1 && result[0].id === null) {
@@ -18,6 +18,14 @@ where u.id = ${userId}
     }
 
     return result;
+  }
+
+  getBankAccountById(bankAccountId: string) {
+    return this.prisma.bankAccount.findFirst({
+      where: {
+        id: bankAccountId,
+      },
+    });
   }
 
   createBankAccount(input: {

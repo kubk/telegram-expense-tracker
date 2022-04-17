@@ -100,7 +100,7 @@ export const useRefreshDb = () => {
                     info: 'Other',
                   },
                   {
-                    createdAt: DateTime.now().plus({ day: 1 }).toJSDate(),
+                    createdAt: DateTime.now().minus({ month: 1 }).toJSDate(),
                     amount: 500 * 100,
                     currency: Currency.USD,
                     title: 'I Talki',

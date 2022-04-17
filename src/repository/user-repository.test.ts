@@ -1,5 +1,5 @@
-import { userRepository } from '../../container';
-import { useRefreshDb } from '../../utils/use-refresh-db';
+import { userRepository } from '../container';
+import { useRefreshDb } from '../utils/use-refresh-db';
 
 useRefreshDb();
 

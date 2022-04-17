@@ -11,6 +11,10 @@ export const currencyToSymbol = (currency: Currency) => {
   }
 };
 
+export const formatMoney = (amount: number, currency: Currency) => {
+  return `${amount / 100}${currencyToSymbol(currency)}`;
+};
+
 export const isValidCurrency = (currency: any): currency is Currency => {
   return Object.values(Currency).includes(currency);
 };

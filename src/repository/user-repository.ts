@@ -1,6 +1,6 @@
 import { PrismaClient, User } from '@prisma/client';
 import { v4 } from 'uuid';
-import { UserState } from '../user-state';
+import { UserState } from '../telegram-bot/user-state';
 import { assert } from 'ts-essentials';
 
 export class UserRepository {

@@ -1,53 +1,62 @@
 import { Markup, Telegraf } from 'telegraf';
 import { getEnvSafe } from '../utils/get-env-safe';
-import { bankRepository, userRepository } from '../container';
+import {
+  bankRepository,
+  transactionRepository,
+  userRepository,
+} from '../container';
 import { assert } from 'ts-essentials';
 import { currencyToSymbol, isValidCurrency } from './currency-to-symbol';
-import { BotAction, humanizeAction } from './bot-action';
+import { BotAction } from './bot-action';
 import {
   isAddingBankAccountCurrencyState,
   isAddingBankAccountNameState,
+  isAddingTransactionAmountState,
+  isAddingTransactionTitleState,
   isInitialState,
 } from './user-state';
+import {
+  buildBankAccountListMenu,
+  buildBankAccountMenu,
+  buildMonthStatistics,
+  buildWeekStatistics,
+} from './button-builders';
+import { isNumber } from '../utils/is-number';
 
+const logTelegram = false;
 const bot = new Telegraf(getEnvSafe('TELEGRAM_BOT_TOKEN'));
+if (logTelegram) {
+  bot.use(Telegraf.log());
+}
 
-bot.use(Telegraf.log());
-
-const buildMainMenu = () => {
-  return [
-    [
-      Markup.button.callback(
-        humanizeAction(BotAction.BankAccountList),
-        BotAction.BankAccountList
-      ),
-    ],
-    [
-      Markup.button.callback(
-        humanizeAction(BotAction.TransactionAddManual),
-        BotAction.TransactionAddManual
-      ),
-    ],
-    [
-      Markup.button.callback(
-        humanizeAction(BotAction.UploadBankStatement),
-        BotAction.UploadBankStatement
-      ),
-    ],
-  ] as any;
-};
+const cancelText = '\n\nOr click /cancel to cancel the operation';
 
 bot.command('start', async (ctx) => {
   await userRepository.createUserIfNotExists(ctx.message.from.id);
+  const user = await userRepository.getUserByTelegramIdOrThrow(
+    ctx.message.from.id
+  );
+  const bankAccounts = await bankRepository.getUserBankAccounts(user.id);
   await ctx.reply(
     `Hello 👋\nThis is a Telegram bot to track your expenses`,
-    Markup.inlineKeyboard(buildMainMenu())
+    Markup.inlineKeyboard(buildBankAccountListMenu(bankAccounts))
   );
 });
 
-bot.action(BotAction.MainMenu, async (ctx) => {
-  await ctx.answerCbQuery();
-  await ctx.editMessageReplyMarkup({ inline_keyboard: buildMainMenu() });
+bot.command('cancel', async (ctx) => {
+  const user = await userRepository.getUserByTelegramIdOrThrow(
+    ctx.message.from.id
+  );
+  assert(user.telegramProfile);
+  await userRepository.setUserState(user.telegramProfile.id, {
+    type: 'initial',
+  });
+
+  const bankAccounts = await bankRepository.getUserBankAccounts(user.id);
+  await ctx.reply(
+    `Hello 👋\nThis is a Telegram bot to track your expenses`,
+    Markup.inlineKeyboard(buildBankAccountListMenu(bankAccounts))
+  );
 });
 
 bot.action(BotAction.BankAccountList, async (ctx) => {
@@ -56,23 +65,8 @@ bot.action(BotAction.BankAccountList, async (ctx) => {
     ctx.callbackQuery.from.id
   );
   const bankAccounts = await bankRepository.getUserBankAccounts(user.id);
-
   await ctx.editMessageReplyMarkup({
-    inline_keyboard: [
-      [
-        Markup.button.callback(
-          humanizeAction(BotAction.BankAccountAdd),
-          BotAction.BankAccountAdd
-        ),
-      ],
-      ...bankAccounts.map((bankAccount) => [
-        Markup.button.callback(
-          `${bankAccount.name} (${currencyToSymbol(bankAccount.currency)})`,
-          'bank_account:' + bankAccount.id
-        ),
-      ]),
-      [Markup.button.callback('◀️ Back', BotAction.MainMenu)],
-    ],
+    inline_keyboard: buildBankAccountListMenu(bankAccounts),
   });
 });
 
@@ -82,9 +76,89 @@ bot.action(BotAction.BankAccountAdd, async (ctx) => {
     ctx.callbackQuery.from.id
   );
   assert(user.telegramProfile);
-  await ctx.reply('Please send me the account name');
+  await ctx.reply(`Please send me the account name.${cancelText}`);
   await userRepository.setUserState(user.telegramProfile.id, {
     type: 'addingBankAccountName',
+  });
+});
+
+bot.action(/select_bank_account:(.+)/, async (ctx) => {
+  const bankAccountId = ctx.match[1];
+  if (!bankAccountId) {
+    return;
+  }
+  const bankAccount = await bankRepository.getBankAccountById(bankAccountId);
+  assert(bankAccount);
+  await ctx.editMessageReplyMarkup({
+    inline_keyboard: buildBankAccountMenu(bankAccount.id),
+  });
+});
+
+bot.action(/statistic_months:(.+)/, async (ctx) => {
+  const bankAccountId = ctx.match[1];
+  if (!bankAccountId) {
+    return;
+  }
+
+  const user = await userRepository.getUserByTelegramIdOrThrow(
+    ctx.callbackQuery.from.id
+  );
+
+  const bankAccount = await bankRepository.getBankAccountById(bankAccountId);
+  assert(bankAccount);
+  const transactions = await transactionRepository.getUserTransactionsExpenses({
+    userId: user.id,
+    bankAccountId: bankAccountId,
+    type: 'monthly',
+  });
+
+  await ctx.editMessageReplyMarkup({
+    inline_keyboard: buildMonthStatistics(transactions, bankAccount),
+  });
+});
+
+bot.action(/statistic_weeks:(.+)/, async (ctx) => {
+  const bankAccountId = ctx.match[1];
+  if (!bankAccountId) {
+    return;
+  }
+
+  const bankAccount = await bankRepository.getBankAccountById(bankAccountId);
+  assert(bankAccount);
+  const user = await userRepository.getUserByTelegramIdOrThrow(
+    ctx.callbackQuery.from.id
+  );
+  const transactions = await transactionRepository.getUserTransactionsExpenses({
+    userId: user.id,
+    bankAccountId: bankAccountId,
+    type: 'weekly',
+  });
+
+  await ctx.editMessageReplyMarkup({
+    inline_keyboard: buildWeekStatistics(transactions, bankAccount),
+  });
+});
+
+bot.action(/transaction_add_manual:(.+)/, async (ctx) => {
+  const bankAccountId = ctx.match[1];
+  if (!bankAccountId) {
+    return;
+  }
+
+  const bankAccount = await bankRepository.getBankAccountById(bankAccountId);
+  assert(bankAccount);
+  const user = await userRepository.getUserByTelegramIdOrThrow(
+    ctx.callbackQuery.from.id
+  );
+  assert(user.telegramProfile);
+  await ctx.reply(
+    `Please send me amount in ${currencyToSymbol(
+      bankAccount.currency
+    )}. A positive value for income, a negative values is for outcome\nExamples:\n1000\n-500${cancelText}`
+  );
+  await userRepository.setUserState(user.telegramProfile.id, {
+    type: 'addingTransactionAmount',
+    bankAccountId: bankAccountId,
   });
 });
 
@@ -100,13 +174,12 @@ bot.on('text', async (ctx) => {
       'Unrecognized command. Type /help to see what the bot can do'
     );
   }
-
   if (isAddingBankAccountNameState(state)) {
     await userRepository.setUserState(user.telegramProfile.id, {
       type: 'addingBankAccountCurrency',
       bankAccountName: ctx.message.text,
     });
-    await ctx.reply('Please send me the account currency');
+    await ctx.reply(`Please send me the account currency.${cancelText}`);
   }
   if (isAddingBankAccountCurrencyState(state)) {
     if (!isValidCurrency(ctx.message.text)) {
@@ -121,9 +194,47 @@ bot.on('text', async (ctx) => {
     await userRepository.setUserState(user.telegramProfile.id, {
       type: 'initial',
     });
+    const bankAccounts = await bankRepository.getUserBankAccounts(user.id);
     await ctx.reply(
-      `The bank account has been added 👍`,
-      Markup.inlineKeyboard(buildMainMenu())
+      `Done 👍\nThe bank account has been added`,
+      Markup.inlineKeyboard(buildBankAccountListMenu(bankAccounts))
+    );
+  }
+
+  if (isAddingTransactionAmountState(state)) {
+    if (!isNumber(ctx.message.text)) {
+      await ctx.reply('Please enter a valid number (only digits accepted)');
+      return;
+    }
+    await userRepository.setUserState(user.telegramProfile.id, {
+      type: 'addingTransactionTitle',
+      bankAccountId: state.bankAccountId,
+      amount: ctx.message.text * 100,
+    });
+    await ctx.reply(
+      `Please enter transaction title. Examples:
+Rent
+Taxi${cancelText}`
+    );
+  }
+
+  if (isAddingTransactionTitleState(state)) {
+    const bankAccount = await bankRepository.getBankAccountById(
+      state.bankAccountId
+    );
+    assert(bankAccount);
+    await transactionRepository.createManualTransaction({
+      bankAccountId: bankAccount.id,
+      title: ctx.message.text,
+      currency: bankAccount.currency,
+      amount: state.amount,
+    });
+    await userRepository.setUserState(user.telegramProfile.id, {
+      type: 'initial',
+    });
+    await ctx.reply(
+      `Done 👍\nThe transaction has been added!`,
+      Markup.inlineKeyboard(buildBankAccountMenu(bankAccount.id))
     );
   }
 });
