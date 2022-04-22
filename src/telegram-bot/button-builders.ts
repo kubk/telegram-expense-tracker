@@ -1,8 +1,9 @@
 import { BankAccount, Currency } from '@prisma/client';
 import { Markup } from 'telegraf';
-import { BotAction, humanizeAction } from './bot-action';
-import { currencyToSymbol, formatMoney } from './currency-to-symbol';
+import { BotAction, BotActionHidden, humanizeAction } from './bot-action';
 import { UserTransactionExpenseRowItem } from '../repository/transaction-repository';
+import { formatMoney } from './format-money';
+import { currencyToSymbol } from './currency-to-symbol';
 
 export const buildBankAccountMenu = (bankAccountId: string) => {
   return [
@@ -34,32 +35,35 @@ export const buildBankAccountMenu = (bankAccountId: string) => {
   ];
 };
 
-const buildTransactionExpenseRowText = (
+const buildStatisticGrid = (
   row: UserTransactionExpenseRowItem,
-  bankAccount: BankAccount
+  bankAccount: { id: string; currency: Currency }
 ) => {
-  return `${row.groupname} |  +${formatMoney(
-    row.income,
-    bankAccount.currency
-  )}  ${formatMoney(row.outcome, bankAccount.currency)} = ${formatMoney(
-    row.outcome,
-    bankAccount.currency
-  )}`;
+  return [
+    Markup.button.callback(
+      `${row.groupname} ${formatMoney(
+        row.difference,
+        bankAccount.currency
+      ).padStart(10, ' ')}`,
+      `${BotAction.SelectStatisticsMonth}:${row.groupname}:${BotActionHidden.FilterTransactionsAll}`
+    ),
+    Markup.button.callback(
+      `${formatMoney(row.income, bankAccount.currency)}`,
+      `${BotAction.SelectStatisticsMonth}:${row.groupname}:${BotActionHidden.FilterTransactionsIncome}`
+    ),
+    Markup.button.callback(
+      formatMoney(row.outcome, bankAccount.currency),
+      `${BotAction.SelectStatisticsMonth}:${row.groupname}:${BotActionHidden.FilterTransactionsOutcome}`
+    ),
+  ];
 };
 
 export const buildMonthStatistics = (
   statisticRows: UserTransactionExpenseRowItem[],
-  bankAccount: BankAccount
+  bankAccount: { id: string; currency: Currency }
 ) => {
   return [
-    ...statisticRows.map((row) => {
-      return [
-        Markup.button.callback(
-          buildTransactionExpenseRowText(row, bankAccount),
-          `${BotAction.SelectStatisticsMonth}:${row.groupname}`
-        ),
-      ];
-    }),
+    ...statisticRows.map((row) => buildStatisticGrid(row, bankAccount)),
     [
       Markup.button.callback(
         '◀️ Back',
@@ -74,14 +78,7 @@ export const buildWeekStatistics = (
   bankAccount: BankAccount
 ) => {
   return [
-    ...statisticRows.map((row) => {
-      return [
-        Markup.button.callback(
-          buildTransactionExpenseRowText(row, bankAccount),
-          `${BotAction.SelectStatisticsWeek}:${row.groupname}`
-        ),
-      ];
-    }),
+    ...statisticRows.map((row) => buildStatisticGrid(row, bankAccount)),
     [
       Markup.button.callback(
         '◀️ Back',

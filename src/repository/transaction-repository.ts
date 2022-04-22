@@ -74,7 +74,7 @@ export class TransactionRepository {
                sum(case when T.amount > 0 then t.amount else 0 end) as income,
                coalesce(sum(T.amount), 0)                           as difference,
                ba.currency,
-               DATE_PART('week', week_start)                        as groupName
+               DATE_PART('week', week_start)::text                  as groupName
         FROM "Family"
                LEFT JOIN "User" u
                          ON "Family".id = u."familyId" AND u.id = ${userId}
@@ -107,10 +107,10 @@ export class TransactionRepository {
                                      now(), '1 month') as month_start)
         SELECT sum(case when T.amount < 0 then t.amount else 0 end) as outcome,
                sum(case when T.amount > 0 then t.amount else 0 end) as income,
-               sum(T.amount)                                        as difference,
+               coalesce(sum(T.amount), 0)                           as difference,
                ba.currency,
 --                FM removes spaces after text
-               TO_CHAR(month_start, 'FMMonth')                      as groupName
+               TO_CHAR(month_start, 'FMMon')                        as groupName
         FROM "Family"
                LEFT JOIN "User" u
                          ON "Family".id = u."familyId" AND u.id = ${userId}
@@ -141,6 +141,27 @@ export class TransactionRepository {
         amount: input.amount,
         currency: input.currency,
         source: TransactionSource.MANUAL,
+        title: input.title,
+      },
+    });
+  }
+
+  createImportedTransaction(input: {
+    bankAccountId: string;
+    amount: number;
+    currency: Currency;
+    title: string;
+    info: string;
+    createdAt: Date;
+  }) {
+    return this.prisma.transaction.create({
+      data: {
+        createdAt: input.createdAt,
+        bankAccountId: input.bankAccountId,
+        info: input.info,
+        amount: input.amount,
+        currency: input.currency,
+        source: TransactionSource.IMPORTED,
         title: input.title,
       },
     });

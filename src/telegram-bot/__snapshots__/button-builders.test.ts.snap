@@ -1,0 +1,47 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`buildMonthStatistics 1`] = `
+Array [
+  Array [
+    Object {
+      "callback_data": "select_stats_month:2:all",
+      "hide": false,
+      "text": "2        -9₺",
+    },
+    Object {
+      "callback_data": "select_stats_month:2:in",
+      "hide": false,
+      "text": "+1₺",
+    },
+    Object {
+      "callback_data": "select_stats_month:2:out",
+      "hide": false,
+      "text": "-10₺",
+    },
+  ],
+  Array [
+    Object {
+      "callback_data": "select_stats_month:1:all",
+      "hide": false,
+      "text": "1        +1₺",
+    },
+    Object {
+      "callback_data": "select_stats_month:1:in",
+      "hide": false,
+      "text": "+1000₺",
+    },
+    Object {
+      "callback_data": "select_stats_month:1:out",
+      "hide": false,
+      "text": "-999₺",
+    },
+  ],
+  Array [
+    Object {
+      "callback_data": "select_bank_account:1",
+      "hide": false,
+      "text": "◀️ Back",
+    },
+  ],
+]
+`;

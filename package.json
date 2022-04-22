@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest --runInBand",
-    "test:update-snapshots": "jest --runInBand --updateSnapshot",
+    "test": "jest --runInBand --passWithNoTests",
+    "test:update-snapshots": "jest --runInBand --updateSnapshot --passWithNoTests",
     "dev:db:format": "export $(cat .env.dev | xargs) && npx prisma format",
     "dev:db:migrate": "export $(cat .env.dev | xargs) && npx prisma migrate dev --name init",
     "dev:db:generate-types": "export $(cat .env.dev | xargs) && npx prisma generate",
@@ -30,6 +30,7 @@
     "@types/node": "^17.0.24",
     "@types/pdf-parse": "^1.1.1",
     "@types/uuid": "^8.3.4",
+    "conditional-type-checks": "^1.0.5",
     "jest": "^27.5.1",
     "prettier": "^2.6.2",
     "prisma": "^3.12.0",

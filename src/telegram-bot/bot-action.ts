@@ -8,10 +8,16 @@ export enum BotAction {
   TransactionAddManual = 'transaction_add_manual',
   UploadBankStatement = 'upload_bank_statement',
   SelectBankAccount = 'select_bank_account',
-  StatisticMonths = 'statistic_months',
-  StatisticWeeks = 'statistic_weeks',
-  SelectStatisticsMonth = 'select_statistics_month',
-  SelectStatisticsWeek = 'select_statistics_month',
+  StatisticMonths = 'stats_months',
+  StatisticWeeks = 'stats_weeks',
+  SelectStatisticsMonth = 'select_stats_month',
+  SelectStatisticsWeek = 'select_stats_month',
+}
+
+export enum BotActionHidden {
+  FilterTransactionsAll = 'all',
+  FilterTransactionsIncome = 'in',
+  FilterTransactionsOutcome = 'out',
 }
 
 export const humanizeAction = (action: BotAction) => {

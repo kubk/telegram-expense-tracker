@@ -6,7 +6,6 @@ import {
   userRepository,
 } from '../container';
 import { assert } from 'ts-essentials';
-import { currencyToSymbol, isValidCurrency } from './currency-to-symbol';
 import { BotAction } from './bot-action';
 import {
   isAddingBankAccountCurrencyState,
@@ -22,6 +21,9 @@ import {
   buildWeekStatistics,
 } from './button-builders';
 import { isNumber } from '../utils/is-number';
+import { currencyToSymbol } from './currency-to-symbol';
+import { isValidEnumValue } from '../lib/is-valid-enum-value.test';
+import { Currency } from '@prisma/client';
 
 const logTelegram = false;
 const bot = new Telegraf(getEnvSafe('TELEGRAM_BOT_TOKEN'));
@@ -94,7 +96,7 @@ bot.action(/select_bank_account:(.+)/, async (ctx) => {
   });
 });
 
-bot.action(/statistic_months:(.+)/, async (ctx) => {
+bot.action(/stats_months:(.+)/, async (ctx) => {
   const bankAccountId = ctx.match[1];
   if (!bankAccountId) {
     return;
@@ -117,7 +119,7 @@ bot.action(/statistic_months:(.+)/, async (ctx) => {
   });
 });
 
-bot.action(/statistic_weeks:(.+)/, async (ctx) => {
+bot.action(/stats_weeks:(.+)/, async (ctx) => {
   const bankAccountId = ctx.match[1];
   if (!bankAccountId) {
     return;
@@ -182,7 +184,7 @@ bot.on('text', async (ctx) => {
     await ctx.reply(`Please send me the account currency.${cancelText}`);
   }
   if (isAddingBankAccountCurrencyState(state)) {
-    if (!isValidCurrency(ctx.message.text)) {
+    if (!isValidEnumValue(ctx.message.text, Currency)) {
       await ctx.reply('Please enter either TRY or USD');
       return;
     }
@@ -233,7 +235,7 @@ Taxi${cancelText}`
       type: 'initial',
     });
     await ctx.reply(
-      `Done 👍\nThe transaction has been added!`,
+      `Hello 👋\nThis is a Telegram bot to track your expenses`,
       Markup.inlineKeyboard(buildBankAccountMenu(bankAccount.id))
     );
   }
