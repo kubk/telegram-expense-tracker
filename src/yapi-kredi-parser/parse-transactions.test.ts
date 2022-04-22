@@ -1,25 +1,57 @@
 import { existsSync, readFileSync } from 'fs';
 import { parseTransactions } from './parse-transactions';
+import { transactionRepository } from '../container';
+import { fixtures, useRefreshDb } from '../utils/use-refresh-db';
+import { testIf } from '../lib/test-if';
 
-const table = [
-  {
-    pdfPath: '/Users/egor/Downloads/at1.pdf',
-    testName: 'it parses one page PDF',
-  },
-  {
-    pdfPath: '/Users/egor/Downloads/march.pdf',
-    testName: 'it parses multi page page PDF',
-  },
-];
+useRefreshDb();
 
-table.forEach((testCase) => {
-  // Jest doesn't allow skipping tests programmatically, that's why we do it here with the loop
-  const testOrSkip = existsSync(testCase.pdfPath) ? test : test.skip;
-
-  testOrSkip(testCase.testName, async () => {
-    const path = testCase.pdfPath;
+testIf(
+  () => existsSync('/Users/egor/Downloads/2022-april.pdf'),
+  'import transactions removes old and adds new',
+  async () => {
+    const path = '/Users/egor/Downloads/2022-april.pdf';
     const dataBuffer = readFileSync(path);
+    const result = await parseTransactions(dataBuffer);
+    const bankAccountId = fixtures.bankAccounts.user_1_ba_usd;
 
+    const importTransactions = () => {
+      return transactionRepository.importTransactions(
+        bankAccountId,
+        result.map((item) => ({
+          ...item,
+          bankAccountId: bankAccountId,
+        }))
+      );
+    };
+
+    const firstResult = await importTransactions();
+
+    expect(firstResult).toStrictEqual({ added: result.length, removed: 0 });
+
+    const secondResult = await importTransactions();
+
+    expect(secondResult).toStrictEqual({
+      added: result.length,
+      removed: result.length,
+    });
+  }
+);
+
+testIf(
+  () => existsSync('/Users/egor/Downloads/at1.pdf'),
+  'it parses one page PDF',
+  async () => {
+    const dataBuffer = readFileSync('/Users/egor/Downloads/at1.pdf');
     expect(await parseTransactions(dataBuffer)).toMatchSnapshot();
-  });
-});
+  }
+);
+
+testIf(
+  () => existsSync('/Users/egor/Downloads/march.pdf'),
+  'it parses multi page page PDF',
+  async () => {
+    const dataBuffer = readFileSync('/Users/egor/Downloads/march.pdf');
+    expect(await parseTransactions(dataBuffer)).toMatchSnapshot();
+  }
+);

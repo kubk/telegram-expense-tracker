@@ -5,3 +5,6 @@ export const getEnvSafe = (name: string) => {
   }
   return result;
 };
+
+export const isDev = () => getEnvSafe('NODE_ENV') === 'dev';
+export const isTesting = () => getEnvSafe('NODE_ENV') === 'test';

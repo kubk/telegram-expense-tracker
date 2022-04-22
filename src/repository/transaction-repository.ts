@@ -11,7 +11,7 @@ import {
 } from '../utils/calc-pagination-offset';
 import { DateTime } from 'luxon';
 import { v4 } from 'uuid';
-import { UnreachableCaseError } from 'ts-essentials';
+import { assert, UnreachableCaseError } from 'ts-essentials';
 
 export type UserTransactionExpenseRowItem = {
   outcome: number;
@@ -146,24 +146,59 @@ export class TransactionRepository {
     });
   }
 
-  createImportedTransaction(input: {
-    bankAccountId: string;
-    amount: number;
-    currency: Currency;
-    title: string;
-    info: string;
-    createdAt: Date;
-  }) {
-    return this.prisma.transaction.create({
-      data: {
-        createdAt: input.createdAt,
-        bankAccountId: input.bankAccountId,
-        info: input.info,
-        amount: input.amount,
-        currency: input.currency,
-        source: TransactionSource.IMPORTED,
-        title: input.title,
-      },
-    });
+  async importTransactions(
+    bankAccountId: string,
+    transactions: Array<{
+      bankAccountId: string;
+      amount: number;
+      currency: Currency;
+      title: string;
+      info: string;
+      createdAt: Date;
+    }>
+  ) {
+    if (transactions.length < 2) {
+      throw new Error('Minimum transaction amount is 2');
+    }
+
+    const maxTransactionDate = transactions.reduce<Date | null>(
+      (maxDate, current) =>
+        !maxDate || current.createdAt > maxDate ? current.createdAt : maxDate,
+      null
+    );
+
+    const minTransactionDate = transactions.reduce<Date | null>(
+      (minDate, current) =>
+        !minDate || current.createdAt < minDate ? current.createdAt : minDate,
+      null
+    );
+
+    assert(maxTransactionDate);
+    assert(minTransactionDate);
+
+    const [removeResult, addResult] = await this.prisma.$transaction([
+      this.prisma.transaction.deleteMany({
+        where: {
+          bankAccountId,
+          createdAt: {
+            gte: minTransactionDate,
+            lte: maxTransactionDate,
+          },
+        },
+      }),
+      this.prisma.transaction.createMany({
+        data: transactions.map((input) => ({
+          createdAt: input.createdAt,
+          bankAccountId: input.bankAccountId,
+          info: input.info,
+          amount: input.amount,
+          currency: input.currency,
+          source: TransactionSource.IMPORTED,
+          title: input.title,
+        })),
+      }),
+    ]);
+
+    return { removed: removeResult.count, added: addResult.count };
   }
 }

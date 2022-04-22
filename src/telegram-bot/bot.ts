@@ -1,7 +1,7 @@
-import { Markup, Telegraf } from 'telegraf';
-import { getEnvSafe } from '../utils/get-env-safe';
+import { Markup } from 'telegraf';
 import {
   bankRepository,
+  bot,
   transactionRepository,
   userRepository,
 } from '../container';
@@ -22,14 +22,8 @@ import {
 } from './button-builders';
 import { isNumber } from '../utils/is-number';
 import { currencyToSymbol } from './currency-to-symbol';
-import { isValidEnumValue } from '../lib/is-valid-enum-value.test';
 import { Currency } from '@prisma/client';
-
-const logTelegram = false;
-const bot = new Telegraf(getEnvSafe('TELEGRAM_BOT_TOKEN'));
-if (logTelegram) {
-  bot.use(Telegraf.log());
-}
+import { isValidEnumValue } from '../lib/is-valid-enum-value';
 
 const cancelText = '\n\nOr click /cancel to cancel the operation';
 

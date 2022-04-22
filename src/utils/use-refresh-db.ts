@@ -2,8 +2,7 @@ import { prisma } from '../container';
 import { Currency } from '@prisma/client';
 import { execPromise } from './exec-promise';
 import { DateTime } from 'luxon';
-import { getEnvSafe } from './get-env-safe';
-import { UserState } from '../telegram-bot/user-state';
+import { getEnvSafe } from './env';
 
 jest.setTimeout(10000);
 

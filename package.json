@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest --runInBand --passWithNoTests",
-    "test:update-snapshots": "jest --runInBand --updateSnapshot --passWithNoTests",
+    "test": "export $(cat .env | xargs) && jest --runInBand",
+    "test:update-snapshots": "export $(cat .env | xargs) && jest --runInBand --updateSnapshot",
     "dev:db:format": "export $(cat .env.dev | xargs) && npx prisma format",
     "dev:db:migrate": "export $(cat .env.dev | xargs) && npx prisma migrate dev --name init",
     "dev:db:generate-types": "export $(cat .env.dev | xargs) && npx prisma generate",
