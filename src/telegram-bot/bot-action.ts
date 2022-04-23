@@ -1,49 +1,36 @@
 import { UnreachableCaseError } from 'ts-essentials';
 
-export enum BotAction {
-  MainMenu = 'main_menu',
-  BankAccountList = 'bank_account_list',
-  BankAccountAdd = 'bank_account_add',
-  BankAccountRemove = 'bank_account_remove',
-  TransactionAddManual = 'transaction_add_manual',
-  UploadBankStatement = 'upload_bank_statement',
+export enum BotButtons {
+  BankAccountListButton = 'bank_account_list',
+  BankAccountAddButton = 'bank_account_add',
+  BankAccountRemoveButton = 'bank_account_remove',
+  TransactionAddManualButton = 'transaction_add_manual',
+  UploadBankStatementButton = 'upload_bank_statement',
+  StatisticMonthsButton = 'stats_months',
+  StatisticWeeksButton = 'stats_weeks',
+}
+
+export enum BotCallbackQuery {
   SelectBankAccount = 'select_bank_account',
-  StatisticMonths = 'stats_months',
-  StatisticWeeks = 'stats_weeks',
-  SelectStatisticsMonth = 'select_stats_month',
-  SelectStatisticsWeek = 'select_stats_month',
+  TransactionSelect = 'select_transaction',
 }
 
-export enum BotActionHidden {
-  FilterTransactionsAll = 'all',
-  FilterTransactionsIncome = 'in',
-  FilterTransactionsOutcome = 'out',
-}
-
-export const humanizeAction = (action: BotAction) => {
+export const humanizeButton = (action: BotButtons) => {
   switch (action) {
-    case BotAction.BankAccountList:
+    case BotButtons.BankAccountListButton:
       return '💳 Bank accounts';
-    case BotAction.TransactionAddManual:
+    case BotButtons.TransactionAddManualButton:
       return '⌨️ Add manual transaction';
-    case BotAction.UploadBankStatement:
+    case BotButtons.UploadBankStatementButton:
       return '🧾 Upload bank statement';
-    case BotAction.BankAccountAdd:
+    case BotButtons.BankAccountAddButton:
       return '➕ Add bank account';
-    case BotAction.BankAccountRemove:
+    case BotButtons.BankAccountRemoveButton:
       return '❌ Remove bank account';
-    case BotAction.MainMenu:
-      return 'Main menu';
-    case BotAction.SelectBankAccount:
-      return 'Select bank account';
-    case BotAction.StatisticMonths:
+    case BotButtons.StatisticMonthsButton:
       return '📈 Monthly statistics';
-    case BotAction.StatisticWeeks:
+    case BotButtons.StatisticWeeksButton:
       return '📈 Weekly statistics';
-    case BotAction.SelectStatisticsMonth:
-      return 'Select statistics of a month';
-    case BotAction.SelectStatisticsWeek:
-      return 'Select statistics of a week';
     default:
       throw new UnreachableCaseError(action);
   }

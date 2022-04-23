@@ -1,4 +1,4 @@
-import { fixtures, useRefreshDb } from '../utils/use-refresh-db';
+import { fixtures, useRefreshDb } from '../fixtures/use-refresh-db';
 import { bankRepository } from '../container';
 
 useRefreshDb();

@@ -1,5 +1,6 @@
 import {
   Currency,
+  Prisma,
   PrismaClient,
   Transaction,
   TransactionSource,
@@ -9,15 +10,28 @@ import {
   calcPaginationOffset,
   CalcPaginationParams,
   createPaginatedResult,
-} from '../lib/pagination';
+} from '../lib/pagination/pagination';
 
 export type UserTransactionExpenseRowItem = {
   outcome: number;
   income: number;
   difference: number;
   groupname: string;
+  groupnumber: number;
+  groupyear: number;
   currency: Currency | null;
 };
+
+export enum UserTransactionListFilter {
+  OnlyIncome = 'in',
+  OnlyOutcome = 'out',
+  NoFilter = 'no',
+}
+
+export enum StatisticGroupByType {
+  Month = 'm',
+  Week = 'w',
+}
 
 export class TransactionRepository {
   constructor(private prisma: PrismaClient) {}
@@ -26,10 +40,33 @@ export class TransactionRepository {
     userId: string;
     bankAccountId: string;
     pagination: CalcPaginationParams;
+    filter: {
+      dateFrom: Date;
+      dateTo: Date;
+      transactionType: UserTransactionListFilter;
+    };
   }) {
-    const { userId, bankAccountId, pagination } = options;
+    const {
+      userId,
+      bankAccountId,
+      pagination,
+      filter: { dateFrom, dateTo, transactionType },
+    } = options;
     const { page } = pagination;
     const { offset, perPage } = calcPaginationOffset(pagination);
+
+    const transactionTypeFilter = (() => {
+      switch (transactionType) {
+        case UserTransactionListFilter.NoFilter:
+          return Prisma.empty;
+        case UserTransactionListFilter.OnlyIncome:
+          return Prisma.sql`AND t.amount > 0`;
+        case UserTransactionListFilter.OnlyOutcome:
+          return Prisma.sql`AND t.amount < 0`;
+        default:
+          throw new UnreachableCaseError(transactionType);
+      }
+    })();
 
     const [countResult, dataResult] = await Promise.all([
       this.prisma.$queryRaw<Array<{ count: number }>>`
@@ -40,18 +77,22 @@ export class TransactionRepository {
                left join "Transaction" t on ba.id = t."bankAccountId"
         where u.id = ${userId}
           and ba.id = ${bankAccountId}
+          ${transactionTypeFilter}
+            and t."createdAt" between ${dateFrom} and ${dateTo}
       `,
       this.prisma.$queryRaw<Transaction[]>`
-      select t.*
-      from "Family"
-             left join "User" u on "Family".id = u."familyId"
-             left join "BankAccount" ba on "Family".id = ba."familyId"
-             left join "Transaction" t on ba.id = t."bankAccountId"
-      where u.id = ${userId}
-        and ba.id = ${bankAccountId}
-      order by t."createdAt" desc
-      offset ${offset} limit ${perPage}
-    `,
+        select t.*
+        from "Family"
+               left join "User" u on "Family".id = u."familyId"
+               left join "BankAccount" ba on "Family".id = ba."familyId"
+               left join "Transaction" t on ba.id = t."bankAccountId"
+        where u.id = ${userId}
+          and ba.id = ${bankAccountId}
+          ${transactionTypeFilter}
+          and t."createdAt" between ${dateFrom} and ${dateTo}
+        order by t."createdAt" desc
+        offset ${offset} limit ${perPage}
+      `,
     ]);
 
     return createPaginatedResult({
@@ -62,14 +103,14 @@ export class TransactionRepository {
     });
   }
 
-  async getUserTransactionsExpenses(options: {
+  async getUserTransactionsExpensesGrouped(options: {
     userId: string;
     bankAccountId: string;
-    type: 'weekly' | 'monthly';
+    type: StatisticGroupByType;
   }) {
     const { userId, bankAccountId, type } = options;
 
-    if (type === 'weekly') {
+    if (type === StatisticGroupByType.Week) {
       return this.prisma.$queryRaw<Array<UserTransactionExpenseRowItem>>`
         with first_transaction_date AS
                (select min(t."createdAt") AS createdAt
@@ -91,7 +132,9 @@ export class TransactionRepository {
                sum(case when T.amount > 0 then t.amount else 0 end) as income,
                coalesce(sum(T.amount), 0)                           as difference,
                ba.currency,
-               date_part('week', week_start)::text                  as groupName
+               extract(year from week_start)                        as groupYear,
+               date_part('week', week_start)                        as groupNumber,
+               'W.' || date_part('week', week_start)::text     as groupName
         from "Family"
                left join "User" u
                          on "Family".id = u."familyId" and u.id = ${userId}
@@ -104,7 +147,7 @@ export class TransactionRepository {
       `;
     }
 
-    if (type === 'monthly') {
+    if (type === StatisticGroupByType.Month) {
       return this.prisma.$queryRaw<Array<UserTransactionExpenseRowItem>>`
         with first_transaction_date AS
                (select min(t."createdAt") AS createdAt
@@ -127,7 +170,9 @@ export class TransactionRepository {
                coalesce(sum(T.amount), 0)                           as difference,
                ba.currency,
                -- FM removes spaces after text
-               to_char(month_start, 'FMMon')                        as groupName
+               to_char(month_start, 'FMMon')                        as groupName,
+               extract(year from month_start)                       as groupYear,
+               extract(month from month_start)                      as groupNumber
         from "Family"
                left join "User" u
                          on "Family".id = u."familyId" and u.id = ${userId}
