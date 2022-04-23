@@ -5,8 +5,8 @@ import {
   transactionRepository,
   userRepository,
 } from '../container';
-import { assert } from 'ts-essentials';
-import { BotAction } from './bot-action';
+import { assert, UnreachableCaseError } from 'ts-essentials';
+import { BotButtons } from './bot-action';
 import {
   isAddingBankAccountCurrencyState,
   isAddingBankAccountNameState,
@@ -14,16 +14,18 @@ import {
   isAddingTransactionTitleState,
   isInitialState,
 } from './user-state';
-import {
-  buildBankAccountListMenu,
-  buildBankAccountMenu,
-  buildMonthStatistics,
-  buildWeekStatistics,
-} from './button-builders';
+import { buildMonthStatistics, buildWeekStatistics } from './build-statistics';
 import { isNumber } from '../utils/is-number';
 import { currencyToSymbol } from './currency-to-symbol';
 import { Currency } from '@prisma/client';
 import { isValidEnumValue } from '../lib/is-valid-enum-value';
+import { buildBankAccountListMenu } from './build-bank-account-list-menu';
+import { buildBankAccountMenu } from './build-bank-account-menu';
+import { UserTransactionListFilter } from '../repository/transaction-repository';
+import {
+  getDateRangeFromMonth,
+  getDateRangeFromWeek,
+} from '../lib/get-date-range';
 
 const cancelText = '\n\nOr click /cancel to cancel the operation';
 
@@ -55,7 +57,7 @@ bot.command('cancel', async (ctx) => {
   );
 });
 
-bot.action(BotAction.BankAccountList, async (ctx) => {
+bot.action(BotButtons.BankAccountListButton, async (ctx) => {
   await ctx.answerCbQuery();
   const user = await userRepository.getUserByTelegramIdOrThrow(
     ctx.callbackQuery.from.id
@@ -66,7 +68,7 @@ bot.action(BotAction.BankAccountList, async (ctx) => {
   });
 });
 
-bot.action(BotAction.BankAccountAdd, async (ctx) => {
+bot.action(BotButtons.BankAccountAddButton, async (ctx) => {
   await ctx.answerCbQuery();
   const user = await userRepository.getUserByTelegramIdOrThrow(
     ctx.callbackQuery.from.id
@@ -102,11 +104,12 @@ bot.action(/stats_months:(.+)/, async (ctx) => {
 
   const bankAccount = await bankRepository.getBankAccountById(bankAccountId);
   assert(bankAccount);
-  const transactions = await transactionRepository.getUserTransactionsExpenses({
-    userId: user.id,
-    bankAccountId: bankAccountId,
-    type: 'monthly',
-  });
+  const transactions =
+    await transactionRepository.getUserTransactionsExpensesGrouped({
+      userId: user.id,
+      bankAccountId: bankAccountId,
+      type: 'monthly',
+    });
 
   await ctx.editMessageReplyMarkup({
     inline_keyboard: buildMonthStatistics(transactions, bankAccount),
@@ -124,15 +127,58 @@ bot.action(/stats_weeks:(.+)/, async (ctx) => {
   const user = await userRepository.getUserByTelegramIdOrThrow(
     ctx.callbackQuery.from.id
   );
-  const transactions = await transactionRepository.getUserTransactionsExpenses({
-    userId: user.id,
-    bankAccountId: bankAccountId,
-    type: 'weekly',
-  });
+  const transactions =
+    await transactionRepository.getUserTransactionsExpensesGrouped({
+      userId: user.id,
+      bankAccountId: bankAccountId,
+      type: 'weekly',
+    });
 
   await ctx.editMessageReplyMarkup({
     inline_keyboard: buildWeekStatistics(transactions, bankAccount),
   });
+});
+
+bot.action(/(week|month):(.+):(\d{4}):(\d+):(.+)/, async (ctx) => {
+  const [, statisticsType, bankAccountId, year, groupNumber, transactionType] =
+    ctx.match;
+  if (!bankAccountId) {
+    return;
+  }
+  if (!isValidEnumValue(transactionType, UserTransactionListFilter)) {
+    return;
+  }
+  const dateFilter = (() => {
+    switch (statisticsType) {
+      case 'week':
+        return getDateRangeFromWeek(parseInt(year), parseInt(groupNumber));
+      case 'month':
+        return getDateRangeFromMonth(parseInt(year), parseInt(groupNumber));
+      default:
+        throw new Error('Invalid statistic type' + statisticsType);
+    }
+  })();
+
+  const user = await userRepository.getUserByTelegramIdOrThrow(
+    ctx.callbackQuery.from.id
+  );
+
+  const result = await transactionRepository.getUserTransactionList({
+    userId: user.id,
+    bankAccountId: bankAccountId,
+    filter: {
+      dateFrom: dateFilter.from,
+      dateTo: dateFilter.to,
+      // @ts-expect-error
+      transactionType: transactionType,
+    },
+    pagination: {
+      perPage: 10,
+      page: 1,
+    },
+  });
+
+  console.log(result);
 });
 
 bot.action(/transaction_add_manual:(.+)/, async (ctx) => {

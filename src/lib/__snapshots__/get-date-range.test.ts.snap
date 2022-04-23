@@ -1,0 +1,29 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`get date range from month 1`] = `
+Object {
+  "from": 2021-12-31T21:00:00.000Z,
+  "to": 2022-01-31T20:59:59.999Z,
+}
+`;
+
+exports[`get date range from week 1`] = `
+Object {
+  "from": 2022-01-02T21:00:00.000Z,
+  "to": 2022-01-09T20:59:59.999Z,
+}
+`;
+
+exports[`get date range from week 2`] = `
+Object {
+  "from": 2022-01-09T21:00:00.000Z,
+  "to": 2022-01-16T20:59:59.999Z,
+}
+`;
+
+exports[`get date range from week 3`] = `
+Object {
+  "from": 2022-01-16T21:00:00.000Z,
+  "to": 2022-01-23T20:59:59.999Z,
+}
+`;

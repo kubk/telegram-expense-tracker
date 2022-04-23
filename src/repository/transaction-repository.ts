@@ -16,8 +16,16 @@ export type UserTransactionExpenseRowItem = {
   income: number;
   difference: number;
   groupname: string;
+  groupnumber: number;
+  groupyear: number;
   currency: Currency | null;
 };
+
+export enum UserTransactionListFilter {
+  OnlyIncome = 'in',
+  OnlyOutcome = 'out',
+  NoFilter = 'no',
+}
 
 export class TransactionRepository {
   constructor(private prisma: PrismaClient) {}
@@ -26,8 +34,18 @@ export class TransactionRepository {
     userId: string;
     bankAccountId: string;
     pagination: CalcPaginationParams;
+    filter: {
+      dateFrom: Date;
+      dateTo: Date;
+      transactionType: UserTransactionListFilter;
+    };
   }) {
-    const { userId, bankAccountId, pagination } = options;
+    const {
+      userId,
+      bankAccountId,
+      pagination,
+      filter: { dateFrom, dateTo, transactionType },
+    } = options;
     const { page } = pagination;
     const { offset, perPage } = calcPaginationOffset(pagination);
 
@@ -42,16 +60,16 @@ export class TransactionRepository {
           and ba.id = ${bankAccountId}
       `,
       this.prisma.$queryRaw<Transaction[]>`
-      select t.*
-      from "Family"
-             left join "User" u on "Family".id = u."familyId"
-             left join "BankAccount" ba on "Family".id = ba."familyId"
-             left join "Transaction" t on ba.id = t."bankAccountId"
-      where u.id = ${userId}
-        and ba.id = ${bankAccountId}
-      order by t."createdAt" desc
-      offset ${offset} limit ${perPage}
-    `,
+        select t.*
+        from "Family"
+               left join "User" u on "Family".id = u."familyId"
+               left join "BankAccount" ba on "Family".id = ba."familyId"
+               left join "Transaction" t on ba.id = t."bankAccountId"
+        where u.id = ${userId}
+          and ba.id = ${bankAccountId}
+        order by t."createdAt" desc
+        offset ${offset} limit ${perPage}
+      `,
     ]);
 
     return createPaginatedResult({
@@ -62,7 +80,7 @@ export class TransactionRepository {
     });
   }
 
-  async getUserTransactionsExpenses(options: {
+  async getUserTransactionsExpensesGrouped(options: {
     userId: string;
     bankAccountId: string;
     type: 'weekly' | 'monthly';
@@ -91,7 +109,9 @@ export class TransactionRepository {
                sum(case when T.amount > 0 then t.amount else 0 end) as income,
                coalesce(sum(T.amount), 0)                           as difference,
                ba.currency,
-               date_part('week', week_start)::text                  as groupName
+               extract(year from week_start)                        as groupYear,
+               date_part('week', week_start)                        as groupNumber,
+               'Неделя ' || date_part('week', week_start)::text     as groupName
         from "Family"
                left join "User" u
                          on "Family".id = u."familyId" and u.id = ${userId}
@@ -127,7 +147,9 @@ export class TransactionRepository {
                coalesce(sum(T.amount), 0)                           as difference,
                ba.currency,
                -- FM removes spaces after text
-               to_char(month_start, 'FMMon')                        as groupName
+               to_char(month_start, 'FMMon')                        as groupName,
+               extract(year from month_start)                       as groupYear,
+               extract(month from month_start)                      as groupNumber
         from "Family"
                left join "User" u
                          on "Family".id = u."familyId" and u.id = ${userId}
