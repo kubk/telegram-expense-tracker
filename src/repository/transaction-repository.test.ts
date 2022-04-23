@@ -1,6 +1,7 @@
-import { fixtures, useRefreshDb } from '../utils/use-refresh-db';
+import { fixtures, useRefreshDb } from '../fixtures/use-refresh-db';
 import { transactionRepository } from '../container';
 import {
+  StatisticGroupByType,
   UserTransactionExpenseRowItem,
   UserTransactionListFilter,
 } from './transaction-repository';
@@ -51,19 +52,33 @@ test('transaction list for user and ba', async () => {
   });
   expect(thirdResult.items).toHaveLength(3);
 
-  const fourthResult = await transactionRepository.getUserTransactionList({
+  const onlyOutcomeResult = await transactionRepository.getUserTransactionList({
     userId: fixtures.users.user_2,
     bankAccountId: fixtures.bankAccounts.user_1_ba_usd,
     pagination: {
       page: 1,
     },
     filter: {
-      transactionType: UserTransactionListFilter.NoFilter,
+      transactionType: UserTransactionListFilter.OnlyOutcome,
       dateFrom: DateTime.now().startOf('year').toJSDate(),
       dateTo: DateTime.now().endOf('year').toJSDate(),
     },
   });
-  expect(fourthResult.items).toHaveLength(3);
+  expect(onlyOutcomeResult.items).toHaveLength(1);
+
+  const onlyIncomeResult = await transactionRepository.getUserTransactionList({
+    userId: fixtures.users.user_2,
+    bankAccountId: fixtures.bankAccounts.user_1_ba_usd,
+    pagination: {
+      page: 1,
+    },
+    filter: {
+      transactionType: UserTransactionListFilter.OnlyIncome,
+      dateFrom: DateTime.now().startOf('year').toJSDate(),
+      dateTo: DateTime.now().endOf('year').toJSDate(),
+    },
+  });
+  expect(onlyIncomeResult.items).toHaveLength(2);
 });
 
 test('transactions pagination', async () => {
@@ -125,7 +140,7 @@ test('transaction monthly starts - TRY bank account', async () => {
     await transactionRepository.getUserTransactionsExpensesGrouped({
       userId: fixtures.users.user_1,
       bankAccountId: fixtures.bankAccounts.user_1_ba_try,
-      type: 'monthly',
+      type: StatisticGroupByType.Month,
     })
   ).toStrictEqual(expectedTryBankAccountStats);
 
@@ -133,7 +148,7 @@ test('transaction monthly starts - TRY bank account', async () => {
     await transactionRepository.getUserTransactionsExpensesGrouped({
       userId: fixtures.users.user_2,
       bankAccountId: fixtures.bankAccounts.user_1_ba_try,
-      type: 'monthly',
+      type: StatisticGroupByType.Month,
     })
   ).toStrictEqual(expectedTryBankAccountStats);
 });
@@ -143,7 +158,7 @@ test('transaction weekly starts - USD bank account', async () => {
     {
       currency: 'USD',
       difference: 199000,
-      groupname: 'Неделя 16',
+      groupname: 'W.16',
       groupyear: 2022,
       groupnumber: 16,
       income: 200000,
@@ -152,7 +167,7 @@ test('transaction weekly starts - USD bank account', async () => {
     {
       currency: null,
       difference: 0,
-      groupname: 'Неделя 15',
+      groupname: 'W.15',
       groupyear: 2022,
       groupnumber: 15,
       income: 0,
@@ -161,7 +176,7 @@ test('transaction weekly starts - USD bank account', async () => {
     {
       currency: null,
       difference: 0,
-      groupname: 'Неделя 14',
+      groupname: 'W.14',
       groupyear: 2022,
       groupnumber: 14,
       income: 0,
@@ -170,7 +185,7 @@ test('transaction weekly starts - USD bank account', async () => {
     {
       currency: null,
       difference: 0,
-      groupname: 'Неделя 13',
+      groupname: 'W.13',
       groupyear: 2022,
       groupnumber: 13,
       income: 0,
@@ -179,7 +194,7 @@ test('transaction weekly starts - USD bank account', async () => {
     {
       currency: 'USD',
       difference: 50000,
-      groupname: 'Неделя 12',
+      groupname: 'W. 12',
       groupyear: 2022,
       groupnumber: 12,
       income: 50000,
@@ -191,7 +206,7 @@ test('transaction weekly starts - USD bank account', async () => {
     await transactionRepository.getUserTransactionsExpensesGrouped({
       userId: fixtures.users.user_1,
       bankAccountId: fixtures.bankAccounts.user_1_ba_usd,
-      type: 'weekly',
+      type: StatisticGroupByType.Week,
     })
   ).toStrictEqual(expectedTryBankAccountStats);
 
@@ -199,7 +214,7 @@ test('transaction weekly starts - USD bank account', async () => {
     await transactionRepository.getUserTransactionsExpensesGrouped({
       userId: fixtures.users.user_2,
       bankAccountId: fixtures.bankAccounts.user_1_ba_usd,
-      type: 'weekly',
+      type: StatisticGroupByType.Week,
     })
   ).toStrictEqual(expectedTryBankAccountStats);
 });
@@ -230,7 +245,7 @@ test('transaction monthly stats - USD bank account', async () => {
     await transactionRepository.getUserTransactionsExpensesGrouped({
       userId: fixtures.users.user_1,
       bankAccountId: fixtures.bankAccounts.user_1_ba_usd,
-      type: 'monthly',
+      type: StatisticGroupByType.Month,
     })
   ).toStrictEqual(expectedUsdBankAccountStats);
 
@@ -238,7 +253,7 @@ test('transaction monthly stats - USD bank account', async () => {
     await transactionRepository.getUserTransactionsExpensesGrouped({
       userId: fixtures.users.user_2,
       bankAccountId: fixtures.bankAccounts.user_1_ba_usd,
-      type: 'monthly',
+      type: StatisticGroupByType.Month,
     })
   ).toStrictEqual(expectedUsdBankAccountStats);
 });

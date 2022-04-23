@@ -4,7 +4,7 @@ import { FamilyRepository } from './repository/family-repository';
 import { BankAccountRepository } from './repository/bank-account-repository';
 import { TransactionRepository } from './repository/transaction-repository';
 import { Telegraf } from 'telegraf';
-import { getEnvSafe, isTesting } from './utils/env';
+import { getEnvSafe, isTesting } from './lib/env/env';
 
 export const config = {
   logSql: false,

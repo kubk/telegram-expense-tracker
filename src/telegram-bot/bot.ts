@@ -5,7 +5,7 @@ import {
   transactionRepository,
   userRepository,
 } from '../container';
-import { assert, UnreachableCaseError } from 'ts-essentials';
+import { assert } from 'ts-essentials';
 import { BotButtons } from './bot-action';
 import {
   isAddingBankAccountCurrencyState,
@@ -14,18 +14,25 @@ import {
   isAddingTransactionTitleState,
   isInitialState,
 } from './user-state';
-import { buildMonthStatistics, buildWeekStatistics } from './build-statistics';
-import { isNumber } from '../utils/is-number';
+import {
+  buildMonthStatistics,
+  buildTransactionPaginatedResult,
+  buildWeekStatistics,
+} from './build-statistics';
+import { isNumber } from '../lib/validaton/is-number';
 import { currencyToSymbol } from './currency-to-symbol';
 import { Currency } from '@prisma/client';
-import { isValidEnumValue } from '../lib/is-valid-enum-value';
+import { isValidEnumValue } from '../lib/typescript/is-valid-enum-value';
 import { buildBankAccountListMenu } from './build-bank-account-list-menu';
 import { buildBankAccountMenu } from './build-bank-account-menu';
-import { UserTransactionListFilter } from '../repository/transaction-repository';
+import {
+  StatisticGroupByType,
+  UserTransactionListFilter,
+} from '../repository/transaction-repository';
 import {
   getDateRangeFromMonth,
   getDateRangeFromWeek,
-} from '../lib/get-date-range';
+} from '../lib/date/get-date-range';
 
 const cancelText = '\n\nOr click /cancel to cancel the operation';
 
@@ -108,7 +115,7 @@ bot.action(/stats_months:(.+)/, async (ctx) => {
     await transactionRepository.getUserTransactionsExpensesGrouped({
       userId: user.id,
       bankAccountId: bankAccountId,
-      type: 'monthly',
+      type: StatisticGroupByType.Month,
     });
 
   await ctx.editMessageReplyMarkup({
@@ -131,7 +138,7 @@ bot.action(/stats_weeks:(.+)/, async (ctx) => {
     await transactionRepository.getUserTransactionsExpensesGrouped({
       userId: user.id,
       bankAccountId: bankAccountId,
-      type: 'weekly',
+      type: StatisticGroupByType.Week,
     });
 
   await ctx.editMessageReplyMarkup({
@@ -139,23 +146,34 @@ bot.action(/stats_weeks:(.+)/, async (ctx) => {
   });
 });
 
-bot.action(/(week|month):(.+):(\d{4}):(\d+):(.+)/, async (ctx) => {
-  const [, statisticsType, bankAccountId, year, groupNumber, transactionType] =
-    ctx.match;
-  if (!bankAccountId) {
-    return;
-  }
-  if (!isValidEnumValue(transactionType, UserTransactionListFilter)) {
+bot.action(/([wm]):(.+):(\d{4}):(\d+):(.+):(.+)/, async (ctx) => {
+  const [
+    ,
+    statisticsType,
+    bankAccountId,
+    year,
+    groupNumber,
+    transactionType,
+    pageString,
+  ] = ctx.match;
+  const page = parseInt(pageString);
+
+  if (
+    !bankAccountId ||
+    !isNumber(page) ||
+    !isValidEnumValue(transactionType, UserTransactionListFilter) ||
+    !isValidEnumValue(statisticsType, StatisticGroupByType)
+  ) {
     return;
   }
   const dateFilter = (() => {
     switch (statisticsType) {
-      case 'week':
+      case StatisticGroupByType.Week:
         return getDateRangeFromWeek(parseInt(year), parseInt(groupNumber));
-      case 'month':
+      case StatisticGroupByType.Month:
         return getDateRangeFromMonth(parseInt(year), parseInt(groupNumber));
       default:
-        throw new Error('Invalid statistic type' + statisticsType);
+        throw new Error(`Invalid statistic type${statisticsType}`);
     }
   })();
 
@@ -169,16 +187,27 @@ bot.action(/(week|month):(.+):(\d{4}):(\d+):(.+)/, async (ctx) => {
     filter: {
       dateFrom: dateFilter.from,
       dateTo: dateFilter.to,
-      // @ts-expect-error
       transactionType: transactionType,
     },
     pagination: {
       perPage: 10,
-      page: 1,
+      page: page,
     },
   });
 
-  console.log(result);
+  const bankAccount = await bankRepository.getBankAccountById(bankAccountId);
+  assert(bankAccount);
+
+  await ctx.editMessageReplyMarkup({
+    inline_keyboard: buildTransactionPaginatedResult({
+      transactionsPaginated: result,
+      type: statisticsType,
+      filter: transactionType,
+      bankAccount: bankAccount,
+      groupYear: parseInt(year),
+      groupNumber: parseInt(groupNumber),
+    }),
+  });
 });
 
 bot.action(/transaction_add_manual:(.+)/, async (ctx) => {

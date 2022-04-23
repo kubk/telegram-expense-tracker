@@ -11,9 +11,8 @@ export enum BotButtons {
 }
 
 export enum BotCallbackQuery {
-  SelectStatisticsMonth = 'select_stats_month',
-  SelectStatisticsWeek = 'select_stats_month',
   SelectBankAccount = 'select_bank_account',
+  TransactionSelect = 'select_transaction',
 }
 
 export const humanizeButton = (action: BotButtons) => {

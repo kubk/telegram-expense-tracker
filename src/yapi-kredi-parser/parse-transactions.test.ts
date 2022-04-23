@@ -1,8 +1,8 @@
 import { existsSync, readFileSync } from 'fs';
 import { parseTransactions } from './parse-transactions';
 import { transactionRepository } from '../container';
-import { fixtures, useRefreshDb } from '../utils/use-refresh-db';
-import { testIf } from '../lib/test-if';
+import { fixtures, useRefreshDb } from '../fixtures/use-refresh-db';
+import { testIf } from '../lib/jest/test-if';
 
 useRefreshDb();
 

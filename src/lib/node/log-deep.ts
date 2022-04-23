@@ -1,3 +1,3 @@
-export const dump = (result: any) => {
+export const logDeep = (result: any) => {
   console.dir(result, { depth: null });
 };
