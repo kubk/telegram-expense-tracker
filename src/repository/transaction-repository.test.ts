@@ -4,45 +4,73 @@ import { transactionRepository } from '../container';
 useRefreshDb();
 
 test('transaction list for user and ba', async () => {
-  expect(
-    await transactionRepository.getUserTransactionList({
-      userId: fixtures.users.user_1,
-      bankAccountId: fixtures.bankAccounts.user_1_ba_try,
-      pagination: {
-        page: 1,
-      },
-    })
-  ).toHaveLength(2);
+  const firstResult = await transactionRepository.getUserTransactionList({
+    userId: fixtures.users.user_1,
+    bankAccountId: fixtures.bankAccounts.user_1_ba_try,
+    pagination: {
+      page: 1,
+    },
+  });
+  expect(firstResult.items).toHaveLength(2);
 
-  expect(
-    await transactionRepository.getUserTransactionList({
-      userId: fixtures.users.user_2,
-      bankAccountId: fixtures.bankAccounts.user_1_ba_try,
-      pagination: {
-        page: 1,
-      },
-    })
-  ).toHaveLength(2);
+  const secondResult = await transactionRepository.getUserTransactionList({
+    userId: fixtures.users.user_2,
+    bankAccountId: fixtures.bankAccounts.user_1_ba_try,
+    pagination: {
+      page: 1,
+    },
+  });
+  expect(secondResult.items).toHaveLength(2);
 
-  expect(
-    await transactionRepository.getUserTransactionList({
-      userId: fixtures.users.user_1,
-      bankAccountId: fixtures.bankAccounts.user_1_ba_usd,
-      pagination: {
-        page: 1,
-      },
-    })
-  ).toHaveLength(3);
+  const thirdResult = await transactionRepository.getUserTransactionList({
+    userId: fixtures.users.user_1,
+    bankAccountId: fixtures.bankAccounts.user_1_ba_usd,
+    pagination: {
+      page: 1,
+    },
+  });
+  expect(thirdResult.items).toHaveLength(3);
 
-  expect(
-    await transactionRepository.getUserTransactionList({
-      userId: fixtures.users.user_2,
-      bankAccountId: fixtures.bankAccounts.user_1_ba_usd,
-      pagination: {
-        page: 1,
-      },
-    })
-  ).toHaveLength(3);
+  const fourthResult = await transactionRepository.getUserTransactionList({
+    userId: fixtures.users.user_2,
+    bankAccountId: fixtures.bankAccounts.user_1_ba_usd,
+    pagination: {
+      page: 1,
+    },
+  });
+  expect(fourthResult.items).toHaveLength(3);
+});
+
+test('transactions pagination', async () => {
+  const firstPageResult = await transactionRepository.getUserTransactionList({
+    userId: fixtures.users.user_1,
+    bankAccountId: fixtures.bankAccounts.user_1_ba_usd,
+    pagination: {
+      page: 1,
+      perPage: 2,
+    },
+  });
+  expect(firstPageResult.currentPage).toBe(1);
+  expect(firstPageResult.items.length).toBe(2);
+  expect(firstPageResult.nextPage).toBe(2);
+  expect(firstPageResult.previousPage).toBe(null);
+  expect(firstPageResult.totalItemsCount).toBe(3);
+  expect(firstPageResult.totalPages).toBe(2);
+
+  const secondPageResult = await transactionRepository.getUserTransactionList({
+    userId: fixtures.users.user_1,
+    bankAccountId: fixtures.bankAccounts.user_1_ba_usd,
+    pagination: {
+      page: 2,
+      perPage: 2,
+    },
+  });
+  expect(secondPageResult.currentPage).toBe(2);
+  expect(secondPageResult.items.length).toBe(1);
+  expect(secondPageResult.nextPage).toBe(null);
+  expect(secondPageResult.previousPage).toBe(1);
+  expect(secondPageResult.totalItemsCount).toBe(3);
+  expect(secondPageResult.totalPages).toBe(2);
 });
 
 test('transaction monthly starts - TRY bank account', async () => {
@@ -190,5 +218,7 @@ test('create manual transaction', async () => {
     },
   });
 
-  expect(transactionsBefore.length).toBe(transactionsAfter.length - 1);
+  expect(transactionsBefore.items.length).toBe(
+    transactionsAfter.items.length - 1
+  );
 });
