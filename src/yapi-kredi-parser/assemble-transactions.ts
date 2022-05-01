@@ -1,7 +1,7 @@
 import { Transaction } from './types';
 import { ITEM_SEPARATOR } from './constants';
 import { parseMoney } from './parse-money';
-import { parseDate } from './parse.date';
+import { parseDate } from './parse-date';
 
 type TemporaryTransaction = {
   createdAt: Date;
@@ -28,7 +28,7 @@ export const assembleTransactions = (rawPdfRows: string[]) => {
       if (!temporaryTransaction) {
         return;
       }
-      const isLastRowOfTransaction = columns[0].match(/\d\d\sTL/);
+      const isLastRowOfTransaction = columns[0].match(/\d\d\s(TL|USD)/);
       if (isLastRowOfTransaction) {
         const { titlePieces, ...restTemporaryTransaction } =
           temporaryTransaction;

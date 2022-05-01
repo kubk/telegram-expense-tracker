@@ -1,11 +1,12 @@
-import { Currency } from './types';
+import { Currency } from '@prisma/client';
+import { YapiKrediCurrency } from './types';
 
 const parseCurrency = (currencyString: string): Currency => {
   switch (currencyString) {
-    case 'TL':
-      return 'TRY';
-    case 'USD':
-      return 'USD';
+    case YapiKrediCurrency.TRY:
+      return Currency.TRY;
+    case YapiKrediCurrency.USD:
+      return Currency.USD;
     default:
       throw new Error(`Invalid currency ${currencyString}`);
   }

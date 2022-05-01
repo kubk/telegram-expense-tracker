@@ -48,6 +48,17 @@ testIf(
 );
 
 testIf(
+  () => existsSync('/Users/egor/Downloads/usd-transactions.pdf'),
+  'PDF with USD',
+  async () => {
+    const dataBuffer = readFileSync(
+      '/Users/egor/Downloads/usd-transactions.pdf'
+    );
+    expect(await parseTransactions(dataBuffer)).toMatchSnapshot();
+  }
+);
+
+testIf(
   () => existsSync('/Users/egor/Downloads/march.pdf'),
   'it parses multi page page PDF',
   async () => {

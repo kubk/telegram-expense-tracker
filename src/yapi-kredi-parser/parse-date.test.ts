@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon';
-import { parseDate } from './parse.date';
+import { parseDate } from './parse-date';
 
 test('parse date', () => {
   const result = DateTime.fromJSDate(parseDate('01/04/2022', '13:47:03'));

@@ -1,4 +1,9 @@
-export type Currency = 'TRY' | 'USD';
+import { Currency } from '@prisma/client';
+
+export enum YapiKrediCurrency {
+  TRY = 'TL',
+  USD = 'USD',
+}
 
 export type Transaction = {
   createdAt: Date;

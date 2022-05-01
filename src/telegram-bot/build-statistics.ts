@@ -86,7 +86,10 @@ const getTransactionSourceIcon = (transactionSource: TransactionSource) => {
 };
 
 const filterTransactionTitle = (title: string) => {
-  return title.replace(/POS TMSZ /, '').replace(/\d{4,6} \|? ?\d{4,6}$/, '');
+  return title
+    .replace(/POS TMSZ /, '')
+    .replace(/\d{4,6} \|? ?\d{4,6}$/, '')
+    .replace(/^EPOS/, '');
 };
 
 const getBackButtonInlineQuery = (type: StatisticGroupByType) => {

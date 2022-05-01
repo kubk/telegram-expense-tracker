@@ -1,5 +1,52 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`PDF with USD 1`] = `
+Array [
+  Object {
+    "amount": 17076,
+    "createdAt": 2022-04-14T11:48:45.000Z,
+    "currency": "USD",
+    "info": "Foreign Exchange / Internet - Mobile",
+    "title": "USD MOBIL DOVIZ ALIS 14.78787",
+  },
+  Object {
+    "amount": -89,
+    "createdAt": 2022-04-11T01:25:18.000Z,
+    "currency": "USD",
+    "info": "Other / Other",
+    "title": "BSMV ULUSLARARASI FON TRANSFERİ | VE MESAJLAŞMA ÜCRETİ-SWIFT HVL | Kom./110422/31473",
+  },
+  Object {
+    "amount": -1787,
+    "createdAt": 2022-04-11T01:25:18.000Z,
+    "currency": "USD",
+    "info": "Other / Other",
+    "title": "ULUSLARARASI FON TRANSFERİ VE | MESAJLAŞMA ÜCRETİ-SWIFT HVL | Kom./110422/31473",
+  },
+  Object {
+    "amount": 14800,
+    "createdAt": 2022-04-11T01:25:18.000Z,
+    "currency": "USD",
+    "info": "Other / Other",
+    "title": "SWIFT HVL/EGOR | GORBACHEV/110422/31473",
+  },
+  Object {
+    "amount": 22000,
+    "createdAt": 2022-04-01T10:47:03.000Z,
+    "currency": "USD",
+    "info": "Foreign Exchange / Internet - Mobile",
+    "title": "USD MOBIL DOVIZ ALIS 14.79654",
+  },
+  Object {
+    "amount": 18000,
+    "createdAt": 2022-03-25T11:07:40.000Z,
+    "currency": "USD",
+    "info": "Foreign Exchange / Internet - Mobile",
+    "title": "USD MOBIL DOVIZ ALIS 14.94484",
+  },
+]
+`;
+
 exports[`it parses multi page page PDF 1`] = `
 Array [
   Object {
@@ -234,11 +281,11 @@ Array [
     "title": "POS TMSZ MIGROS ATATURK 6254 2303",
   },
   Object {
-    "amount": -76500,
+    "amount": 76500,
     "createdAt": 2022-03-22T14:01:26.000Z,
     "currency": "TRY",
     "info": "Money Transfer / Internet - Mobile",
-    "title": "GELEN HAVALE -EL ZARA MUSLIMOVA ",
+    "title": "GELEN HAVALE -EL ZARA MUSLIMOVA -",
   },
   Object {
     "amount": -44335,
