@@ -3,7 +3,7 @@
     "lib": ["es6", "es2015"],
     "module": "commonjs",
     "noImplicitReturns": true,
-    "outDir": "dist",
+    "outDir": "build",
     "sourceMap": true,
     "alwaysStrict": true,
     "allowJs": true,

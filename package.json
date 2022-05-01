@@ -9,17 +9,20 @@
     "dev:db:format": "export $(cat .env.dev | xargs) && npx prisma format",
     "dev:db:migrate": "export $(cat .env.dev | xargs) && npx prisma migrate dev --name init",
     "dev:db:generate-types": "export $(cat .env.dev | xargs) && npx prisma generate",
-    "dev:bot": "export $(cat .env.dev | xargs) && npx ts-node src/telegram-bot/bot.ts",
+    "dev:start": "export $(cat .env.dev | xargs) && npx ts-node src/telegram-bot/bot.ts",
+    "prod:start": "npx pm2 kill && tsc && export $(cat .env.prod | xargs) && npx pm2 start build/telegram-bot/bot.js",
+    "prod:logs": "npx pm2 logs",
+    "prod:status": "npx pm2 status",
     "prettier": "npx prettier 'src/**/*.ts' --write"
   },
   "author": "https://github.com/kubk",
   "license": "ISC",
   "dependencies": {
-    "@prisma/client": "^3.12.0",
+    "@prisma/client": "^3.13.0",
     "axios": "^0.21.1",
-    "dotenv": "^10.0.0",
     "luxon": "^2.3.1",
     "pdf-parse": "^1.1.1",
+    "pm2": "^5.2.0",
     "telegraf": "^4.7.0",
     "ts-essentials": "^7.0.3",
     "uuid": "^8.3.2"
@@ -33,7 +36,7 @@
     "conditional-type-checks": "^1.0.5",
     "jest": "^27.5.1",
     "prettier": "^2.6.2",
-    "prisma": "^3.12.0",
+    "prisma": "^3.13.0",
     "ts-jest": "^27.1.4",
     "ts-node": "^10.7.0",
     "typescript": "^4.6.3"
