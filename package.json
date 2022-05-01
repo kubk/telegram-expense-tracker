@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "export $(cat .env | xargs) && jest --runInBand --bail",
+    "test": "export $(cat .env | xargs) && jest --runInBand",
     "test:update-snapshots": "export $(cat .env | xargs) && jest --runInBand --updateSnapshot",
     "dev:db:format": "export $(cat .env.dev | xargs) && npx prisma format",
     "dev:db:migrate": "export $(cat .env.dev | xargs) && npx prisma migrate dev --name init",
