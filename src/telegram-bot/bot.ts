@@ -48,10 +48,6 @@ bot.command('start', async (ctx) => {
   );
 });
 
-bot.command('break', async (ctx) => {
-  throw new Error('Broken!')
-})
-
 bot.command('cancel', async (ctx) => {
   const user = await userRepository.getUserByTelegramIdOrThrow(
     ctx.message.from.id
