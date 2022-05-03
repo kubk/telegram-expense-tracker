@@ -2,6 +2,7 @@ import { UnreachableCaseError } from 'ts-essentials';
 
 export enum BotButtons {
   BankAccountListButton = 'bank_account_list',
+  BankAccountListButtonWithRemove = 'bank_account_list:remove',
   BankAccountAddButton = 'bank_account_add',
   BankAccountRemoveButton = 'bank_account_remove',
   TransactionAddManualButton = 'transaction_add_manual',
@@ -31,6 +32,8 @@ export const humanizeButton = (action: BotButtons) => {
       return '📈 Monthly statistics';
     case BotButtons.StatisticWeeksButton:
       return '📈 Weekly statistics';
+    case BotButtons.BankAccountListButtonWithRemove:
+      return '◀️ Back to bank accounts';
     default:
       throw new UnreachableCaseError(action);
   }

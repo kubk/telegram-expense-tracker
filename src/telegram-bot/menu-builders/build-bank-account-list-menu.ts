@@ -1,7 +1,7 @@
 import { BankAccount } from '@prisma/client';
 import { Markup } from 'telegraf';
-import { BotButtons, BotCallbackQuery, humanizeButton } from './bot-action';
-import { currencyToSymbol } from './currency-to-symbol';
+import { BotButtons, BotCallbackQuery, humanizeButton } from '../bot-action';
+import { currencyToSymbol } from '../currency-to-symbol';
 
 export const buildBankAccountListMenu = (bankAccounts: BankAccount[]) => {
   return [

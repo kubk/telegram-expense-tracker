@@ -263,4 +263,12 @@ export class TransactionRepository {
 
     return { removed: removeResult.count, added: addResult.count };
   }
+
+  async getTransaction(transactionId: string) {
+    return this.prisma.transaction.findUnique({
+      where: {
+        id: transactionId,
+      },
+    });
+  }
 }

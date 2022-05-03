@@ -1,5 +1,5 @@
 import { Markup } from 'telegraf';
-import { BotButtons, humanizeButton } from './bot-action';
+import { BotButtons, humanizeButton } from '../bot-action';
 
 export const buildBankAccountMenu = (bankAccountId: string) => {
   return [
