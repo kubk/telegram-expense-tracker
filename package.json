@@ -11,6 +11,7 @@
     "dev:db:generate-types": "export $(cat .env.dev | xargs) && npx prisma generate",
     "dev:start": "export $(cat .env.dev | xargs) && npx ts-node src/telegram-bot/routes.ts",
     "prod:start": "npx pm2 kill && tsc && export $(cat .env.prod | xargs) && npx pm2 start build/telegram-bot/bot.js",
+    "prod:db:migrate": "export $(cat .env.prod | xargs) && npx prisma migrate dev --name init",
     "prod:logs": "npx pm2 logs",
     "prod:status": "npx pm2 status",
     "prettier": "npx prettier 'src/**/*.ts' --write"
