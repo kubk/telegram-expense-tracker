@@ -72,13 +72,14 @@ export class TransactionRepository {
       this.prisma.$queryRaw<Array<{ count: number }>>`
         select count(t.id) as count
         from "Family"
-               left join "User" u on "Family".id = u."familyId"
-               left join "BankAccount" ba on "Family".id = ba."familyId"
-               left join "Transaction" t on ba.id = t."bankAccountId"
+          left join "User" u
+        on "Family".id = u."familyId"
+          left join "BankAccount" ba on "Family".id = ba."familyId"
+          left join "Transaction" t on ba.id = t."bankAccountId"
         where u.id = ${userId}
-          and ba.id = ${bankAccountId}
-          ${transactionTypeFilter}
-            and t."createdAt" between ${dateFrom} and ${dateTo}
+          and ba.id = ${bankAccountId} ${transactionTypeFilter}
+          and t."createdAt" between ${dateFrom}
+          and ${dateTo}
       `,
       this.prisma.$queryRaw<Transaction[]>`
         select t.*
@@ -87,9 +88,9 @@ export class TransactionRepository {
                left join "BankAccount" ba on "Family".id = ba."familyId"
                left join "Transaction" t on ba.id = t."bankAccountId"
         where u.id = ${userId}
-          and ba.id = ${bankAccountId}
-          ${transactionTypeFilter}
-          and t."createdAt" between ${dateFrom} and ${dateTo}
+          and ba.id = ${bankAccountId} ${transactionTypeFilter}
+          and t."createdAt" between ${dateFrom}
+          and ${dateTo}
         order by t."createdAt" desc
         offset ${offset} limit ${perPage}
       `,
@@ -120,11 +121,13 @@ export class TransactionRepository {
                        left join "BankAccount" BA
                                  on "Family".id = BA."familyId" and
                                     BA.id = ${bankAccountId}
-                       left join "Transaction" T on BA.id = T."bankAccountId"),
+                       left join "Transaction" t
+                                 on BA.id = t."bankAccountId" and
+                                    t."isCountable" = true),
              weeks AS
                (select week_start,
                        (week_start + interval '1 week' -
-                        interval '1 second') AS week_end
+                         interval '1 second') AS week_end
                 from generate_series(date_trunc('week',
                                                 (select createdAt from first_transaction_date)),
                                      now(), '1 week') AS week_start)
@@ -134,13 +137,14 @@ export class TransactionRepository {
                ba.currency,
                extract(year from week_start)                        as groupYear,
                date_part('week', week_start)                        as groupNumber,
-               'W.' || date_part('week', week_start)::text     as groupName
+               'W.' || date_part('week', week_start) ::text     as groupName
         from "Family"
                left join "User" u
                          on "Family".id = u."familyId" and u.id = ${userId}
                left join "BankAccount" ba on "Family".id = ba."familyId" and
                                              ba.id = ${bankAccountId}
-               left join "Transaction" t on ba.id = t."bankAccountId"
+               left join "Transaction" t
+                         on ba.id = t."bankAccountId" and t."isCountable" = true
                right join weeks on t."createdAt" between week_start and week_end
         group by ba.currency, week_start
         order by week_start desc
@@ -157,11 +161,13 @@ export class TransactionRepository {
                        left join "BankAccount" BA
                                  on "Family".id = BA."familyId" and
                                     BA.id = ${bankAccountId}
-                       left join "Transaction" T on BA.id = T."bankAccountId"),
+                       left join "Transaction" t
+                                 on BA.id = t."bankAccountId" and
+                                    t."isCountable" = true),
              months as
                (select month_start,
                        (month_start + interval '1 month' -
-                        interval '1 second') as month_end
+                         interval '1 second') as month_end
                 from generate_series(date_trunc('month',
                                                 (select createdAt from first_transaction_date)),
                                      now(), '1 month') as month_start)
@@ -178,7 +184,8 @@ export class TransactionRepository {
                          on "Family".id = u."familyId" and u.id = ${userId}
                left join "BankAccount" ba on "Family".id = ba."familyId" and
                                              ba.id = ${bankAccountId}
-               left join "Transaction" t on ba.id = t."bankAccountId"
+               left join "Transaction" t
+                         on ba.id = t."bankAccountId" and t."isCountable" = true
                right join months
                           on t."createdAt" between month_start and month_end
         group by ba.currency, month_start
@@ -269,6 +276,16 @@ export class TransactionRepository {
       where: {
         id: transactionId,
       },
+    });
+  }
+
+  async toggleTransactionCountable(transactionId: string) {
+    const transaction = await this.getTransaction(transactionId);
+    assert(transaction);
+
+    return this.prisma.transaction.update({
+      where: { id: transactionId },
+      data: { isCountable: !transaction.isCountable },
     });
   }
 }

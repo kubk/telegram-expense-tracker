@@ -22,7 +22,7 @@ test('transaction list for user and ba', async () => {
       dateTo: DateTime.now().endOf('year').toJSDate(),
     },
   });
-  expect(firstResult.items).toHaveLength(2);
+  expect(firstResult.items).toHaveLength(3);
 
   const secondResult = await transactionRepository.getUserTransactionList({
     userId: fixtures.users.user_2,
@@ -36,7 +36,7 @@ test('transaction list for user and ba', async () => {
       dateTo: DateTime.now().endOf('year').toJSDate(),
     },
   });
-  expect(secondResult.items).toHaveLength(2);
+  expect(secondResult.items).toHaveLength(3);
 
   const thirdResult = await transactionRepository.getUserTransactionList({
     userId: fixtures.users.user_1,
@@ -50,7 +50,7 @@ test('transaction list for user and ba', async () => {
       dateTo: DateTime.now().endOf('year').toJSDate(),
     },
   });
-  expect(thirdResult.items).toHaveLength(3);
+  expect(thirdResult.items).toHaveLength(4);
 
   const onlyOutcomeResult = await transactionRepository.getUserTransactionList({
     userId: fixtures.users.user_2,
@@ -64,7 +64,7 @@ test('transaction list for user and ba', async () => {
       dateTo: DateTime.now().endOf('year').toJSDate(),
     },
   });
-  expect(onlyOutcomeResult.items).toHaveLength(1);
+  expect(onlyOutcomeResult.items).toHaveLength(2);
 
   const onlyIncomeResult = await transactionRepository.getUserTransactionList({
     userId: fixtures.users.user_2,
@@ -99,7 +99,7 @@ test('transactions pagination', async () => {
   expect(firstPageResult.items.length).toBe(2);
   expect(firstPageResult.nextPage).toBe(2);
   expect(firstPageResult.previousPage).toBe(null);
-  expect(firstPageResult.totalItemsCount).toBe(3);
+  expect(firstPageResult.totalItemsCount).toBe(4);
   expect(firstPageResult.totalPages).toBe(2);
 
   const secondPageResult = await transactionRepository.getUserTransactionList({
@@ -116,10 +116,10 @@ test('transactions pagination', async () => {
     },
   });
   expect(secondPageResult.currentPage).toBe(2);
-  expect(secondPageResult.items.length).toBe(1);
+  expect(secondPageResult.items.length).toBe(2);
   expect(secondPageResult.nextPage).toBe(null);
   expect(secondPageResult.previousPage).toBe(1);
-  expect(secondPageResult.totalItemsCount).toBe(3);
+  expect(secondPageResult.totalItemsCount).toBe(4);
   expect(secondPageResult.totalPages).toBe(2);
 });
 
@@ -158,17 +158,26 @@ test('transaction weekly starts - USD bank account', async () => {
     {
       currency: 'USD',
       difference: 199000,
-      groupname: 'W.17',
       groupyear: 2022,
-      groupnumber: 17,
+      groupname: 'W.18',
+      groupnumber: 18,
       income: 200000,
       outcome: -1000,
     },
     {
       currency: null,
       difference: 0,
-      groupname: 'W.16',
+      groupname: 'W.17',
       groupyear: 2022,
+      groupnumber: 17,
+      income: 0,
+      outcome: 0,
+    },
+    {
+      currency: null,
+      difference: 0,
+      groupyear: 2022,
+      groupname: 'W.16',
       groupnumber: 16,
       income: 0,
       outcome: 0,
@@ -183,20 +192,11 @@ test('transaction weekly starts - USD bank account', async () => {
       outcome: 0,
     },
     {
-      currency: null,
-      difference: 0,
+      currency: 'USD',
+      difference: 50000,
       groupname: 'W.14',
       groupyear: 2022,
       groupnumber: 14,
-      income: 0,
-      outcome: 0,
-    },
-    {
-      currency: 'USD',
-      difference: 50000,
-      groupname: 'W.13',
-      groupyear: 2022,
-      groupnumber: 13,
       income: 50000,
       outcome: 0,
     },

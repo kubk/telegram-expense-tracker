@@ -1,13 +1,13 @@
 import { Transaction } from '@prisma/client';
 import { Markup } from 'telegraf';
-import { BotButtons, humanizeButton } from '../bot-action';
+import { BotButtons, BotCallbackQuery, humanizeButton } from '../bot-action';
 
 export const buildTransactionPageMenu = (transaction: Transaction) => {
   return [
     [
       Markup.button.callback(
-        'Is countable - Yes 💶',
-        BotButtons.BankAccountListButton
+        `Is countable - ${transaction.isCountable ? 'Yes 💶' : 'No 👻'}`,
+        `${BotCallbackQuery.TransactionIsCountableToggle}:${transaction.id}`
       ),
     ],
     [

@@ -11,6 +11,7 @@ import { transactionListHandler } from './command-handlers/transaction-list-hand
 import { transactionAddManualHandler } from './command-handlers/transaction-add-manual-handler';
 import { textHandler } from './command-handlers/text-handler';
 import { selectTransactionHandler } from './command-handlers/select-transaction-handler';
+import { transactionIsCountableToggleCommand } from './command-handlers/transaction-is-countable-toggle-command';
 
 bot.command('start', startHandler);
 bot.command('cancel', cancelHandler);
@@ -18,6 +19,7 @@ bot.action(/bank_account_list:(.*)/, bankAccountListButtonHandler);
 bot.action(BotButtons.BankAccountAddButton, bankAccountAddButtonHandler);
 bot.action(/select_bank_account:(.+)/, selectBankAccountHandler);
 bot.action(/select_transaction:(.+)/, selectTransactionHandler);
+bot.action(/transaction_is_count:(.+)/, transactionIsCountableToggleCommand);
 bot.action(/stats_months:(.+)/, statsMonthHandler);
 bot.action(/stats_weeks:(.+)/, statsWeekHandler);
 bot.action(/([wm]):(.+):(\d{4}):(\d+):(.+):(.+)/, transactionListHandler);

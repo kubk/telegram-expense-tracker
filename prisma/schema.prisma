@@ -55,6 +55,7 @@ model Transaction {
   id            String            @id @default(uuid())
   createdAt     DateTime
   source        TransactionSource @default(IMPORTED)
+  isCountable   Boolean           @default(true)
   amount        Int
   currency      Currency
   title         String

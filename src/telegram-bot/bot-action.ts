@@ -14,6 +14,7 @@ export enum BotButtons {
 export enum BotCallbackQuery {
   SelectBankAccount = 'select_bank_account',
   TransactionSelect = 'select_transaction',
+  TransactionIsCountableToggle = 'transaction_is_count',
 }
 
 export const humanizeButton = (action: BotButtons) => {

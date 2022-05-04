@@ -21,6 +21,10 @@ const getTransactionSourceIcon = (transactionSource: TransactionSource) => {
   }
 };
 
+const getTransactionIsCountableIcon = (transaction: Transaction) => {
+  return transaction.isCountable ? '' : '👻';
+};
+
 const filterTransactionTitle = (title: string) => {
   return title
     .replace(/POS TMSZ /, '')
@@ -71,12 +75,17 @@ export const buildTransactionPaginatedResult = (options: {
   const backButtonTitle = getBackButtonTitle(type);
 
   return [
-    ...transactionsPaginated.items.map((item) => [
+    ...transactionsPaginated.items.map((transaction) => [
       Markup.button.callback(
-        `${formatMoney(item.amount, item.currency)}  ${getTransactionSourceIcon(
-          item.source
-        )}  ${filterTransactionTitle(item.title)}`,
-        `${BotCallbackQuery.TransactionSelect}:${item.id}`
+        `${formatMoney(
+          transaction.amount,
+          transaction.currency
+        )}  ${getTransactionSourceIcon(
+          transaction.source
+        )} ${getTransactionIsCountableIcon(
+          transaction
+        )}  ${filterTransactionTitle(transaction.title)}`,
+        `${BotCallbackQuery.TransactionSelect}:${transaction.id}`
       ),
     ]),
     [
