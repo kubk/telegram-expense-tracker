@@ -10,16 +10,20 @@ import { selectBankAccountHandler } from './command-handlers/select-bank-account
 import { transactionListHandler } from './command-handlers/transaction-list-handler';
 import { transactionAddManualHandler } from './command-handlers/transaction-add-manual-handler';
 import { textHandler } from './command-handlers/text-handler';
-import { selectTransactionHandler } from './command-handlers/select-transaction-handler';
+import { transactionSelectHandler } from './command-handlers/transaction-select-handler';
 import { transactionIsCountableToggleCommand } from './command-handlers/transaction-is-countable-toggle-command';
+import { transactionDeleteAskHandler } from './command-handlers/transaction-delete-ask-handler';
+import { transactionDeleteDoHandler } from './command-handlers/transaction-delete-do-handler';
 
 bot.command('start', startHandler);
 bot.command('cancel', cancelHandler);
-bot.action(/bank_account_list:(.*)/, bankAccountListButtonHandler);
+bot.action(/bank_account_list:?(.*)/, bankAccountListButtonHandler);
 bot.action(BotButtons.BankAccountAddButton, bankAccountAddButtonHandler);
 bot.action(/select_bank_account:(.+)/, selectBankAccountHandler);
-bot.action(/select_transaction:(.+)/, selectTransactionHandler);
+bot.action(/select_transaction:(.+)/, transactionSelectHandler);
 bot.action(/transaction_is_count:(.+)/, transactionIsCountableToggleCommand);
+bot.action(/transaction_del_ask:(.+)/, transactionDeleteAskHandler);
+bot.action(/transaction_del_do:(.+)/, transactionDeleteDoHandler);
 bot.action(/stats_months:(.+)/, statsMonthHandler);
 bot.action(/stats_weeks:(.+)/, statsWeekHandler);
 bot.action(/([wm]):(.+):(\d{4}):(\d+):(.+):(.+)/, transactionListHandler);

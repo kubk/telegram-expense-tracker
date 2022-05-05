@@ -1,6 +1,6 @@
 import { Context } from 'telegraf';
 import { transactionRepository } from '../../container';
-import { selectTransactionHandler } from './select-transaction-handler';
+import { transactionSelectHandler } from './transaction-select-handler';
 
 export const transactionIsCountableToggleCommand = async (ctx: Context) => {
   const transactionId = (ctx as any).match[1];
@@ -8,5 +8,5 @@ export const transactionIsCountableToggleCommand = async (ctx: Context) => {
     return;
   }
   await transactionRepository.toggleTransactionCountable(transactionId);
-  return selectTransactionHandler(ctx);
+  return transactionSelectHandler(ctx);
 };

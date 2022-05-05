@@ -36,74 +36,6 @@ export enum StatisticGroupByType {
 export class TransactionRepository {
   constructor(private prisma: PrismaClient) {}
 
-  async getUserTransactionList(options: {
-    userId: string;
-    bankAccountId: string;
-    pagination: CalcPaginationParams;
-    filter: {
-      dateFrom: Date;
-      dateTo: Date;
-      transactionType: UserTransactionListFilter;
-    };
-  }) {
-    const {
-      userId,
-      bankAccountId,
-      pagination,
-      filter: { dateFrom, dateTo, transactionType },
-    } = options;
-    const { page } = pagination;
-    const { offset, perPage } = calcPaginationOffset(pagination);
-
-    const transactionTypeFilter = (() => {
-      switch (transactionType) {
-        case UserTransactionListFilter.NoFilter:
-          return Prisma.empty;
-        case UserTransactionListFilter.OnlyIncome:
-          return Prisma.sql`AND t.amount > 0`;
-        case UserTransactionListFilter.OnlyOutcome:
-          return Prisma.sql`AND t.amount < 0`;
-        default:
-          throw new UnreachableCaseError(transactionType);
-      }
-    })();
-
-    const [countResult, dataResult] = await Promise.all([
-      this.prisma.$queryRaw<Array<{ count: number }>>`
-        select count(t.id) as count
-        from "Family"
-          left join "User" u
-        on "Family".id = u."familyId"
-          left join "BankAccount" ba on "Family".id = ba."familyId"
-          left join "Transaction" t on ba.id = t."bankAccountId"
-        where u.id = ${userId}
-          and ba.id = ${bankAccountId} ${transactionTypeFilter}
-          and t."createdAt" between ${dateFrom}
-          and ${dateTo}
-      `,
-      this.prisma.$queryRaw<Transaction[]>`
-        select t.*
-        from "Family"
-               left join "User" u on "Family".id = u."familyId"
-               left join "BankAccount" ba on "Family".id = ba."familyId"
-               left join "Transaction" t on ba.id = t."bankAccountId"
-        where u.id = ${userId}
-          and ba.id = ${bankAccountId} ${transactionTypeFilter}
-          and t."createdAt" between ${dateFrom}
-          and ${dateTo}
-        order by t."createdAt" desc
-        offset ${offset} limit ${perPage}
-      `,
-    ]);
-
-    return createPaginatedResult({
-      items: dataResult,
-      totalItemsCount: countResult[0].count,
-      perPage: perPage,
-      currentPage: page,
-    });
-  }
-
   async getUserTransactionsExpensesGrouped(options: {
     userId: string;
     bankAccountId: string;
@@ -196,6 +128,74 @@ export class TransactionRepository {
     throw new UnreachableCaseError(type);
   }
 
+  async getUserTransactionList(options: {
+    userId: string;
+    bankAccountId: string;
+    pagination: CalcPaginationParams;
+    filter: {
+      dateFrom: Date;
+      dateTo: Date;
+      transactionType: UserTransactionListFilter;
+    };
+  }) {
+    const {
+      userId,
+      bankAccountId,
+      pagination,
+      filter: { dateFrom, dateTo, transactionType },
+    } = options;
+    const { page } = pagination;
+    const { offset, perPage } = calcPaginationOffset(pagination);
+
+    const transactionTypeFilter = (() => {
+      switch (transactionType) {
+        case UserTransactionListFilter.NoFilter:
+          return Prisma.empty;
+        case UserTransactionListFilter.OnlyIncome:
+          return Prisma.sql`AND t.amount > 0`;
+        case UserTransactionListFilter.OnlyOutcome:
+          return Prisma.sql`AND t.amount < 0`;
+        default:
+          throw new UnreachableCaseError(transactionType);
+      }
+    })();
+
+    const [countResult, dataResult] = await Promise.all([
+      this.prisma.$queryRaw<Array<{ count: number }>>`
+        select count(t.id) as count
+        from "Family"
+          left join "User" u
+        on "Family".id = u."familyId"
+          left join "BankAccount" ba on "Family".id = ba."familyId"
+          left join "Transaction" t on ba.id = t."bankAccountId"
+        where u.id = ${userId}
+          and ba.id = ${bankAccountId} ${transactionTypeFilter}
+          and t."createdAt" between ${dateFrom}
+          and ${dateTo}
+      `,
+      this.prisma.$queryRaw<Transaction[]>`
+        select t.*
+        from "Family"
+               left join "User" u on "Family".id = u."familyId"
+               left join "BankAccount" ba on "Family".id = ba."familyId"
+               left join "Transaction" t on ba.id = t."bankAccountId"
+        where u.id = ${userId}
+          and ba.id = ${bankAccountId} ${transactionTypeFilter}
+          and t."createdAt" between ${dateFrom}
+          and ${dateTo}
+        order by t."createdAt" desc
+        offset ${offset} limit ${perPage}
+      `,
+    ]);
+
+    return createPaginatedResult({
+      items: dataResult,
+      totalItemsCount: countResult[0].count,
+      perPage: perPage,
+      currentPage: page,
+    });
+  }
+
   createManualTransaction(input: {
     bankAccountId: string;
     amount: number;
@@ -273,6 +273,14 @@ export class TransactionRepository {
 
   async getTransaction(transactionId: string) {
     return this.prisma.transaction.findUnique({
+      where: {
+        id: transactionId,
+      },
+    });
+  }
+
+  deleteTransaction(transactionId: string) {
+    return this.prisma.transaction.delete({
       where: {
         id: transactionId,
       },

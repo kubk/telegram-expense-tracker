@@ -13,7 +13,7 @@ export const buildTransactionPageMenu = (transaction: Transaction) => {
     [
       Markup.button.callback(
         'Remove transaction 🗑',
-        BotButtons.BankAccountListButton
+        `${BotCallbackQuery.TransactionDeleteAsk}:${transaction.id}`
       ),
     ],
     [

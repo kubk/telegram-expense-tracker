@@ -4,8 +4,19 @@ import { assert } from 'ts-essentials';
 import { buildTransactionPageMenu } from '../menu-builders/build-transaction-page-menu';
 import { DateTime } from 'luxon';
 import { formatMoney } from '../format-money';
+import { currencyConvert } from '../../currency-converter/currency-convert';
+import { Currency, Transaction } from '@prisma/client';
 
-export const selectTransactionHandler = async (ctx: Context) => {
+const getMoneyUsdFormatted = (transaction: Transaction) => {
+  const moneyUsd =
+    transaction.currency === Currency.TRY
+      ? currencyConvert(transaction.amount, transaction.currency, Currency.USD)
+      : null;
+
+  return moneyUsd ? `(${formatMoney(moneyUsd.amount, moneyUsd.currency)})` : '';
+};
+
+export const transactionSelectHandler = async (ctx: Context) => {
   const transactionId = (ctx as any).match[1];
   if (!transactionId) {
     return;
@@ -20,9 +31,9 @@ export const selectTransactionHandler = async (ctx: Context) => {
 ${DateTime.fromJSDate(transaction.createdAt)
   .setLocale('ru')
   .toLocaleString(DateTime.DATETIME_SHORT)}
-${formatMoney(transaction.amount, transaction.currency)} (${Math.ceil(
-      transaction.amount / 100 / 14.9
-    )}$)
+${formatMoney(transaction.amount, transaction.currency)} ${getMoneyUsdFormatted(
+      transaction
+    )}
 `,
     Markup.inlineKeyboard(buildTransactionPageMenu(transaction))
   );

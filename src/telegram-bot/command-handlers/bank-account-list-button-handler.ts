@@ -12,7 +12,7 @@ export const bankAccountListButtonHandler = async (ctx: Context) => {
   );
   const bankAccounts = await bankRepository.getUserBankAccounts(user.id);
 
-  if (remove) {
+  if (remove === 'remove') {
     await ctx.deleteMessage();
     await ctx.reply(
       `Hello 👋\nThis is a Telegram bot to track your expenses`,
