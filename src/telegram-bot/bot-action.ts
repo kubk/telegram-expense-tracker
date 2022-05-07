@@ -17,6 +17,8 @@ export enum BotCallbackQuery {
   TransactionIsCountableToggle = 'transaction_is_count',
   TransactionDeleteAsk = 'transaction_del_ask',
   TransactionDeleteDo = 'transaction_del_do',
+  TransactionAddManualExpense = 'transaction_manual:out',
+  TransactionAddManualTopUp = 'transaction_manual:in',
 }
 
 export const humanizeButton = (action: BotButtons) => {

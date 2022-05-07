@@ -12,14 +12,15 @@ import {
   isAddingTransactionTitleState,
   isInitialState,
 } from '../user-state';
-import { cancelText } from '../cancel-text';
 import { isValidEnumValue } from '../../lib/typescript/is-valid-enum-value';
 import { Currency } from '@prisma/client';
 import { buildBankAccountListMenu } from '../menu-builders/build-bank-account-list-menu';
 import { isNumber } from '../../lib/validaton/is-number';
 import { buildBankAccountMenu } from '../menu-builders/build-bank-account-menu';
+import { withCancelText } from '../with-cancel-text';
+import { TransactionType } from '../../repository/transaction-repository';
 
-export let textHandler = async (ctx: Context) => {
+export const textHandler = async (ctx: Context) => {
   assert(ctx.message);
   const user = await userRepository.getUserByTelegramIdOrThrow(
     ctx.message.from.id
@@ -38,7 +39,7 @@ export let textHandler = async (ctx: Context) => {
       type: 'addingBankAccountCurrency',
       bankAccountName: ctx.message.text,
     });
-    await ctx.reply(`Please send me the account currency.${cancelText}`);
+    await ctx.reply(withCancelText(`Please send me the account currency`));
   }
   if (isAddingBankAccountCurrencyState(state)) {
     assert('text' in ctx.message);
@@ -67,15 +68,21 @@ export let textHandler = async (ctx: Context) => {
       await ctx.reply('Please enter a valid number (only digits accepted)');
       return;
     }
+    const amountWithoutSign = ctx.message.text * 100;
+    const amountWithSign =
+      state.transactionType === TransactionType.Expense
+        ? -1 * amountWithoutSign
+        : amountWithoutSign;
+
     await userRepository.setUserState(user.telegramProfile.id, {
       type: 'addingTransactionTitle',
       bankAccountId: state.bankAccountId,
-      amount: ctx.message.text * 100,
+      amount: amountWithSign,
     });
     await ctx.reply(
-      `Please enter transaction title. Examples:
+      withCancelText(`Please enter transaction title. Examples:
 Rent
-Taxi${cancelText}`
+Taxi`)
     );
   }
 

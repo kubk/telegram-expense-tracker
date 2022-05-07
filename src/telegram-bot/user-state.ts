@@ -1,3 +1,5 @@
+import { TransactionType } from '../repository/transaction-repository';
+
 type Initial = { type: 'initial' };
 
 type AddingBankAccountName = { type: 'addingBankAccountName' };
@@ -7,9 +9,15 @@ type AddingBankAccountCurrency = {
   bankAccountName: string;
 };
 
+type AddingTransactionType = {
+  type: 'addingTransactionType';
+  bankAccountId: string;
+};
+
 type AddingTransactionAmount = {
   type: 'addingTransactionAmount';
   bankAccountId: string;
+  transactionType: TransactionType;
 };
 
 type AddingTransactionTitle = {
@@ -22,6 +30,7 @@ export type UserState =
   | Initial
   | AddingBankAccountName
   | AddingBankAccountCurrency
+  | AddingTransactionType
   | AddingTransactionAmount
   | AddingTransactionTitle;
 
@@ -51,4 +60,10 @@ export const isAddingTransactionTitleState = (
   state: any
 ): state is AddingTransactionTitle => {
   return state?.type === 'addingTransactionTitle';
+};
+
+export const isAddingTransactionType = (
+  state: any
+): state is AddingTransactionType => {
+  return state?.type === 'addingTransactionType';
 };

@@ -8,7 +8,7 @@ import { assert } from 'ts-essentials';
 import { StatisticGroupByType } from '../../repository/transaction-repository';
 import { buildWeekStatisticsMenu } from '../menu-builders/build-week-statistics-menu';
 
-export let statsWeekHandler = async (ctx: Context) => {
+export const statsWeekHandler = async (ctx: Context) => {
   const bankAccountId = (ctx as any).match[1];
   if (!bankAccountId) {
     return;

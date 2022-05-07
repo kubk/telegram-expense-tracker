@@ -22,6 +22,11 @@ export type UserTransactionExpenseRowItem = {
   currency: Currency | null;
 };
 
+export enum TransactionType {
+  Expense = 'out',
+  TopUp = 'in',
+}
+
 export enum UserTransactionListFilter {
   OnlyIncome = 'in',
   OnlyOutcome = 'out',

@@ -32,7 +32,7 @@ const getDateFilter = (
   }
 };
 
-export let transactionListHandler = async (ctx: Context) => {
+export const transactionListHandler = async (ctx: Context) => {
   const [
     ,
     statisticsType,

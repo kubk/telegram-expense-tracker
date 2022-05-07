@@ -32,5 +32,5 @@ export const transactionDeleteDoHandler = async (ctx: Context) => {
     `Hello 👋\nThis is a Telegram bot to track your expenses`,
     Markup.inlineKeyboard(buildBankAccountListMenu(bankAccounts))
   );
-  await ctx.answerCbQuery('Transaction was removed', { show_alert: true });
+  await ctx.answerCbQuery('Transaction was removed');
 };

@@ -8,7 +8,7 @@ import {
 import { StatisticGroupByType } from '../../repository/transaction-repository';
 import { buildMonthStatisticsMenu } from '../menu-builders/build-month-statistics-menu';
 
-export let statsMonthHandler = async (ctx: Context) => {
+export const statsMonthHandler = async (ctx: Context) => {
   const bankAccountId = (ctx as any).match[1];
   if (!bankAccountId) {
     return;
