@@ -254,6 +254,7 @@ export class TransactionRepository {
       this.prisma.transaction.deleteMany({
         where: {
           bankAccountId,
+          source: TransactionSource.IMPORTED,
           createdAt: {
             gte: minTransactionDate,
             lte: maxTransactionDate,
