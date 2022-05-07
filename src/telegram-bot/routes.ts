@@ -15,11 +15,14 @@ import { transactionIsCountableToggleCommand } from './command-handlers/transact
 import { transactionDeleteAskHandler } from './command-handlers/transaction-delete-ask-handler';
 import { transactionDeleteDoHandler } from './command-handlers/transaction-delete-do-handler';
 import { transactionAddManualSelectAmountHandler } from './command-handlers/transaction-add-manual-select-amount-handler';
+import { bankStatementUploadedHandler } from './command-handlers/bank-statement-uploaded-handler';
+import { goToUploadBankStatementHandler } from './command-handlers/go-to-upload-bank-statement-handler';
 
 bot.command('start', startHandler);
 bot.command('cancel', cancelHandler);
 bot.action(/bank_account_list:?(.*)/, bankAccountListButtonHandler);
 bot.action(BotButtons.BankAccountAddButton, bankAccountAddButtonHandler);
+bot.action(/upload_bank_statement:(.+)/, goToUploadBankStatementHandler);
 bot.action(/select_bank_account:(.+)/, selectBankAccountHandler);
 bot.action(/select_transaction:(.+)/, transactionSelectHandler);
 bot.action(/transaction_is_count:(.+)/, transactionIsCountableToggleCommand);
@@ -34,6 +37,7 @@ bot.action(
   transactionAddManualSelectTypeHandler
 );
 bot.on('text', textHandler);
+bot.on('document', bankStatementUploadedHandler);
 
 bot.launch();
 

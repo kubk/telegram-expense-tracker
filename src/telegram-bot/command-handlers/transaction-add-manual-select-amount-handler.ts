@@ -2,9 +2,7 @@ import { Context } from 'telegraf';
 import { bankRepository, userRepository } from '../../container';
 import { currencyToSymbol } from '../currency-to-symbol';
 import { assert } from 'ts-essentials';
-import {
-  isAddingTransactionType,
-} from '../user-state';
+import { isAddingTransactionType } from '../user-state';
 import { withCancelText } from '../with-cancel-text';
 import { isValidEnumValue } from '../../lib/typescript/is-valid-enum-value';
 import { TransactionType } from '../../repository/transaction-repository';

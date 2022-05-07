@@ -26,9 +26,15 @@ type AddingTransactionTitle = {
   bankAccountId: string;
 };
 
+type UploadingBankStatement = {
+  type: 'uploadingBankStatement';
+  bankAccountId: string;
+};
+
 export type UserState =
   | Initial
   | AddingBankAccountName
+  | UploadingBankStatement
   | AddingBankAccountCurrency
   | AddingTransactionType
   | AddingTransactionAmount
@@ -66,4 +72,10 @@ export const isAddingTransactionType = (
   state: any
 ): state is AddingTransactionType => {
   return state?.type === 'addingTransactionType';
+};
+
+export const isUploadingBankStatement = (
+  state: any
+): state is UploadingBankStatement => {
+  return state?.type === 'uploadingBankStatement';
 };

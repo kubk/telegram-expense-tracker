@@ -18,7 +18,7 @@ export const buildBankAccountMenu = (bankAccountId: string) => {
     [
       Markup.button.callback(
         humanizeButton(BotButtons.UploadBankStatementButton),
-        BotButtons.UploadBankStatementButton
+        `${BotButtons.UploadBankStatementButton}:${bankAccountId}`
       ),
     ],
     [

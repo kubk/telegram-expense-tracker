@@ -57,7 +57,7 @@ export const textHandler = async (ctx: Context) => {
     });
     const bankAccounts = await bankRepository.getUserBankAccounts(user.id);
     await ctx.reply(
-      `Done 👍\nThe bank account has been added`,
+      `Hello 👋\nThis is a Telegram bot to track your expenses`,
       Markup.inlineKeyboard(buildBankAccountListMenu(bankAccounts))
     );
   }
