@@ -18,7 +18,7 @@ export const buildStatisticGridMenu = (
       `${row.groupname} ${formatMoney(
         row.difference,
         bankAccount.currency
-      ).padStart(10, ' ')}`,
+      ).padStart(5, ' ')}`,
       `${type}:${bankAccount.id}:${row.groupyear}:${row.groupnumber}:${UserTransactionListFilter.NoFilter}:${page}`
     ),
     Markup.button.callback(

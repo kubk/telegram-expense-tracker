@@ -7,13 +7,19 @@ import { formatMoney } from '../format-money';
 import { currencyConvert } from '../../currency-converter/currency-convert';
 import { Currency, Transaction } from '@prisma/client';
 
-const getMoneyUsdFormatted = (transaction: Transaction) => {
-  const moneyUsd =
-    transaction.currency === Currency.TRY
-      ? currencyConvert(transaction.amount, transaction.currency, Currency.USD)
-      : null;
-
-  return moneyUsd ? `(${formatMoney(moneyUsd.amount, moneyUsd.currency)})` : '';
+const formatAsUsd = (transaction: Transaction) => {
+  switch (transaction.currency) {
+    case Currency.TRY: {
+      const converted = currencyConvert(
+        transaction.amount,
+        transaction.currency,
+        Currency.USD
+      );
+      return `(${formatMoney(converted.amount, converted.currency)})`;
+    }
+    case Currency.USD:
+      return '';
+  }
 };
 
 export const transactionSelectHandler = async (ctx: Context) => {
@@ -26,7 +32,7 @@ export const transactionSelectHandler = async (ctx: Context) => {
   try {
     await ctx.deleteMessage();
   } catch (e) {
-    console.error(`Unable to delete message`, e)
+    console.error(`Unable to delete message`, e);
   }
 
   // TODO: get locale from user
@@ -35,7 +41,7 @@ export const transactionSelectHandler = async (ctx: Context) => {
 ${DateTime.fromJSDate(transaction.createdAt)
   .setLocale('ru')
   .toLocaleString(DateTime.DATETIME_SHORT)}
-${formatMoney(transaction.amount, transaction.currency)} ${getMoneyUsdFormatted(
+${formatMoney(transaction.amount, transaction.currency)} ${formatAsUsd(
       transaction
     )}
 `,
