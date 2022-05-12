@@ -23,7 +23,11 @@ export const transactionSelectHandler = async (ctx: Context) => {
   }
   const transaction = await transactionRepository.getTransaction(transactionId);
   assert(transaction);
-  await ctx.deleteMessage();
+  try {
+    await ctx.deleteMessage();
+  } catch (e) {
+    console.error(`Unable to delete message`, e)
+  }
 
   // TODO: get locale from user
   await ctx.reply(
