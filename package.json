@@ -21,6 +21,8 @@
   "dependencies": {
     "@prisma/client": "^3.13.0",
     "axios": "^0.27.2",
+    "cache-manager": "^3.6.1",
+    "cache-manager-fs-hash": "^1.0.0",
     "luxon": "^2.3.1",
     "pdf-parse": "^1.1.1",
     "pm2": "^5.2.0",
@@ -29,6 +31,8 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
+    "@types/cache-manager": "^3.4.3",
+    "@types/cache-manager-fs-hash": "^0.0.1",
     "@types/jest": "^27.4.1",
     "@types/luxon": "^2.3.1",
     "@types/node": "^17.0.24",

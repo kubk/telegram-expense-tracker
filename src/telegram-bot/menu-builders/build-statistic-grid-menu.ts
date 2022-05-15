@@ -13,20 +13,22 @@ export const buildStatisticGridMenu = (
   bankAccount: { id: string; currency: Currency },
   page: number
 ) => {
+  const money = formatMoney({
+    amount: row.difference,
+    currency: bankAccount.currency,
+  }).padStart(3, ' ');
+
   return [
     Markup.button.callback(
-      `${row.groupname} ${formatMoney(
-        row.difference,
-        bankAccount.currency
-      ).padStart(5, ' ')}`,
+      `${row.groupname} ${money}`,
       `${type}:${bankAccount.id}:${row.groupyear}:${row.groupnumber}:${UserTransactionListFilter.NoFilter}:${page}`
     ),
     Markup.button.callback(
-      formatMoney(row.income, bankAccount.currency),
+      formatMoney({ amount: row.income, currency: bankAccount.currency }),
       `${type}:${bankAccount.id}:${row.groupyear}:${row.groupnumber}:${UserTransactionListFilter.OnlyIncome}:${page}`
     ),
     Markup.button.callback(
-      formatMoney(row.outcome, bankAccount.currency),
+      formatMoney({ amount: row.outcome, currency: bankAccount.currency }),
       `${type}:${bankAccount.id}:${row.groupyear}:${row.groupnumber}:${UserTransactionListFilter.OnlyOutcome}:${page}`
     ),
   ];

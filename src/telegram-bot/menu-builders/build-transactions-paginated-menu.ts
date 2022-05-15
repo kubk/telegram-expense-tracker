@@ -75,19 +75,22 @@ export const buildTransactionPaginatedResult = (options: {
   const backButtonTitle = getBackButtonTitle(type);
 
   return [
-    ...transactionsPaginated.items.map((transaction) => [
-      Markup.button.callback(
-        `${formatMoney(
-          transaction.amount,
-          transaction.currency
-        )}  ${getTransactionSourceIcon(
-          transaction.source
-        )} ${getTransactionIsCountableIcon(
-          transaction
-        )}  ${filterTransactionTitle(transaction.title)}`,
-        `${BotCallbackQuery.TransactionSelect}:${transaction.id}`
-      ),
-    ]),
+    ...transactionsPaginated.items.map((transaction) => {
+      const money = formatMoney({
+        amount: transaction.amount,
+        currency: transaction.currency,
+      });
+      const icon = getTransactionSourceIcon(transaction.source);
+      const isCountable = getTransactionIsCountableIcon(transaction);
+      const title = filterTransactionTitle(transaction.title);
+
+      return [
+        Markup.button.callback(
+          `${money}  ${icon} ${isCountable}  ${title}`,
+          `${BotCallbackQuery.TransactionSelect}:${transaction.id}`
+        ),
+      ];
+    }),
     [
       transactionsPaginated.previousPage !== null
         ? Markup.button.callback(

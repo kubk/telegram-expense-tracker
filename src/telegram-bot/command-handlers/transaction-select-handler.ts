@@ -4,18 +4,21 @@ import { assert } from 'ts-essentials';
 import { buildTransactionPageMenu } from '../menu-builders/build-transaction-page-menu';
 import { DateTime } from 'luxon';
 import { formatMoney } from '../format-money';
-import { currencyConvert } from '../../currency-converter/currency-convert';
 import { Currency, Transaction } from '@prisma/client';
+import { getCurrencyAmountInUsd } from '../../currency-converter/get-currency-amount-in-usd';
 
-const formatAsUsd = (transaction: Transaction) => {
+const formatAsUsd = async (transaction: Transaction) => {
   switch (transaction.currency) {
     case Currency.TRY: {
-      const converted = currencyConvert(
-        transaction.amount,
+      const converted = await getCurrencyAmountInUsd(
         transaction.currency,
-        Currency.USD
+        transaction.amount,
+        DateTime.fromJSDate(transaction.createdAt)
       );
-      return `(${formatMoney(converted.amount, converted.currency)})`;
+      return `(${formatMoney(
+        { amount: converted.amount, currency: converted.currency },
+        { asFloat: true }
+      )})`;
     }
     case Currency.USD:
       return '';
@@ -35,15 +38,17 @@ export const transactionSelectHandler = async (ctx: Context) => {
     console.error(`Unable to delete message`, e);
   }
 
-  // TODO: get locale from user
+  const asUsd = await formatAsUsd(transaction);
+
   await ctx.reply(
     `${transaction.title}
 ${DateTime.fromJSDate(transaction.createdAt)
   .setLocale('ru')
   .toLocaleString(DateTime.DATETIME_SHORT)}
-${formatMoney(transaction.amount, transaction.currency)} ${formatAsUsd(
-      transaction
-    )}
+${formatMoney(
+  { amount: transaction.amount, currency: transaction.currency },
+  { asFloat: true }
+)} ${asUsd}
 `,
     Markup.inlineKeyboard(buildTransactionPageMenu(transaction))
   );
