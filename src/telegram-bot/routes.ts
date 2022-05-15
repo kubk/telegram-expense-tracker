@@ -1,5 +1,5 @@
 import { bot } from '../container';
-import { BotButtons } from './bot-action';
+import { BotButtons, BotCallbackQuery } from './bot-action';
 import { startHandler } from './command-handlers/start-handler';
 import { cancelHandler } from './command-handlers/cancel-handler';
 import { bankAccountListButtonHandler } from './command-handlers/bank-account-list-button-handler';
@@ -17,23 +17,61 @@ import { transactionDeleteDoHandler } from './command-handlers/transaction-delet
 import { transactionAddManualSelectAmountHandler } from './command-handlers/transaction-add-manual-select-amount-handler';
 import { bankStatementUploadedHandler } from './command-handlers/bank-statement-uploaded-handler';
 import { goToUploadBankStatementHandler } from './command-handlers/go-to-upload-bank-statement-handler';
+import { transactionTypeToggleCommand } from './command-handlers/transaction-type-toggle-command';
+import { TransactionType } from '../repository/transaction-repository';
 
 bot.command('start', startHandler);
 bot.command('cancel', cancelHandler);
-bot.action(/bank_account_list:?(.*)/, bankAccountListButtonHandler);
+bot.action(
+  new RegExp(`${BotButtons.BankAccountListButton}:?(.*)`),
+  bankAccountListButtonHandler
+);
 bot.action(BotButtons.BankAccountAddButton, bankAccountAddButtonHandler);
-bot.action(/upload_bank_statement:(.+)/, goToUploadBankStatementHandler);
-bot.action(/select_bank_account:(.+)/, selectBankAccountHandler);
-bot.action(/select_transaction:(.+)/, transactionSelectHandler);
-bot.action(/transaction_is_count:(.+)/, transactionIsCountableToggleCommand);
-bot.action(/transaction_del_ask:(.+)/, transactionDeleteAskHandler);
-bot.action(/transaction_del_do:(.+)/, transactionDeleteDoHandler);
-bot.action(/transaction_manual:(.+)/, transactionAddManualSelectAmountHandler);
-bot.action(/stats_months:(.+)/, statsMonthHandler);
-bot.action(/stats_weeks:(.+)/, statsWeekHandler);
+bot.action(
+  new RegExp(`${BotButtons.UploadBankStatementButton}:(.+)`),
+  goToUploadBankStatementHandler
+);
+bot.action(
+  new RegExp(`${BotCallbackQuery.SelectBankAccount}:(.+)`),
+  selectBankAccountHandler
+);
+bot.action(
+  new RegExp(`${BotCallbackQuery.TransactionSelect}:(.+)`),
+  transactionSelectHandler
+);
+bot.action(
+  new RegExp(`${BotCallbackQuery.TransactionIsCountableToggle}:(.+)`),
+  transactionIsCountableToggleCommand
+);
+bot.action(
+  new RegExp(`${BotCallbackQuery.TransactionTypeToggle}:(.+)`),
+  transactionTypeToggleCommand
+);
+bot.action(
+  new RegExp(`${BotCallbackQuery.TransactionDeleteAsk}:(.+)`),
+  transactionDeleteAskHandler
+);
+bot.action(
+  new RegExp(`${BotCallbackQuery.TransactionDeleteDo}:(.+)`),
+  transactionDeleteDoHandler
+);
+bot.action(
+  new RegExp(
+    `${BotCallbackQuery.TransactionAddManualAmount}:(${TransactionType.Expense}|${TransactionType.TopUp})`
+  ),
+  transactionAddManualSelectAmountHandler
+);
+bot.action(
+  new RegExp(`${BotButtons.StatisticMonthsButton}:(.+)`),
+  statsMonthHandler
+);
+bot.action(
+  new RegExp(`${BotButtons.StatisticWeeksButton}:(.+)`),
+  statsWeekHandler
+);
 bot.action(/([wm]):(.+):(\d{4}):(\d+):(.+):(.+)/, transactionListHandler);
 bot.action(
-  /transaction_add_manual:(.+)/,
+  new RegExp(`${BotButtons.TransactionAddManualButton}:(.+)`),
   transactionAddManualSelectTypeHandler
 );
 bot.on('text', textHandler);

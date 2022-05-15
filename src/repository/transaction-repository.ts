@@ -302,4 +302,14 @@ export class TransactionRepository {
       data: { isCountable: !transaction.isCountable },
     });
   }
+
+  async toggleTransactionType(transactionId: string) {
+    const transaction = await this.getTransaction(transactionId);
+    assert(transaction);
+
+    return this.prisma.transaction.update({
+      where: { id: transactionId },
+      data: { amount: -1 * transaction.amount },
+    });
+  }
 }

@@ -3,17 +3,18 @@ import { bankRepository, userRepository } from '../../container';
 import { assert } from 'ts-essentials';
 import { BotCallbackQuery } from '../bot-action';
 import { withCancelText } from '../with-cancel-text';
+import { TransactionType } from '../../repository/transaction-repository';
 
 const createTransactionTypeSelectMenu = () => {
   return [
     [
       Markup.button.callback(
         'Expense',
-        BotCallbackQuery.TransactionAddManualExpense
+        `${BotCallbackQuery.TransactionAddManualAmount}:${TransactionType.Expense}`
       ),
       Markup.button.callback(
         'Top up',
-        BotCallbackQuery.TransactionAddManualTopUp
+        `${BotCallbackQuery.TransactionAddManualAmount}:${TransactionType.TopUp}`
       ),
     ],
   ];
