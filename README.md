@@ -19,7 +19,60 @@ A Telegram bot for tracking expenses. Available features:
 
 ### Finite state machine visualization
 
-<img width="1295" alt="Screen Shot 2022-04-23 at 23 37 17" src="https://user-images.githubusercontent.com/22447849/164945277-27da30c7-f18d-455e-822c-8490e2415fd1.png">
-
-[Editor](http://magjac.com/graphviz-visual-editor/?dot=digraph%20finite_state_machine%20%7B%0A%09fontname%3D%22Helvetica%2CArial%2Csans-serif%22%0A%09node%20%5Bfontname%3D%22Helvetica%2CArial%2Csans-serif%22%5D%0A%09edge%20%5Bfontname%3D%22Helvetica%2CArial%2Csans-serif%22%5D%0A%09rankdir%3DLR%3B%0A%09node%20%5Bshape%20%3D%20doublecircle%5D%3B%20%22Bank%20account%20list%22%3B%0A%09node%20%5Bshape%20%3D%20circle%5D%3B%0A%09%22Bank%20account%20list%22%20-%3E%20%22Adding%20bank%20account%22%20%5Blabel%20%3D%20%22Add%20bank%20account%22%5D%3B%0A%09%22Adding%20bank%20account%22%20-%3E%20%22Bank%20account%20list%22%20%5Blabel%20%3D%20%22Back%22%5D%3B%0A%09%22Adding%20bank%20account%22%20-%3E%20%22Adding%20account%20name%22%20%5Blabel%20%3D%20%22Add%20bank%20account%20name%22%5D%3B%0A%09%22Adding%20account%20name%22%20-%3E%20%22Adding%20account%20currency%22%20%5Blabel%20%3D%20%22Add%20bank%20account%20currency%22%5D%3B%0A%09%22Adding%20account%20name%22%20-%3E%20%22Bank%20account%20list%22%20%5Blabel%20%3D%20%22Cancel%22%5D%3B%0A%09%22Adding%20account%20currency%22%20-%3E%20%22Bank%20account%20list%22%20%5Blabel%20%3D%20%22Cancel%22%5D%3B%0A%09%22Adding%20account%20currency%22%20-%3E%20%22Bank%20account%20list%22%20%5Blabel%20%3D%20%22Added%20currency%22%5D%3B%0A%09%22Bank%20account%20list%22%20-%3E%20%22Bank%20account%20selected%22%20%5Blabel%20%3D%20%22Select%20bank%20account%22%5D%3B%0A%09%22Bank%20account%20selected%22%20-%3E%20%22Bank%20account%20list%22%20%5Blabel%20%3D%20%22Back%22%5D%3B%0A%09%22Bank%20account%20selected%22%20-%3E%20%22Monthly%20statistics%20selected%22%20%5Blabel%20%3D%20%22Select%20monthly%20statistics%22%5D%3B%0A%09%22Bank%20account%20selected%22%20-%3E%20%22Weekly%20statistics%20selected%22%20%5Blabel%20%3D%20%22Select%20weekly%20statistics%22%5D%3B%0A%09%22Bank%20account%20selected%22%20-%3E%20%22Select%20Upload%20bank%20statement%22%20%5Blabel%20%3D%20%22Select%20upload%20bank%20statement%22%5D%3B%0A%09%22Select%20Upload%20bank%20statement%22%20-%3E%20%22Bank%20account%20selected%22%20%5Blabel%20%3D%20%22Upload%20bank%20statement%22%5D%0A%09%22Select%20Upload%20bank%20statement%22%20-%3E%20%22Bank%20account%20selected%22%20%5Blabel%20%3D%20%22Cancel%22%5D%20%0A%09%22Weekly%20statistics%20selected%22%20-%3E%20%22Bank%20account%20selected%22%20%5Blabel%20%3D%20%22Back%22%5D%0A%09%22Monthly%20statistics%20selected%22%20-%3E%20%22Bank%20account%20selected%22%20%5Blabel%20%3D%20%22Back%22%5D%0A%09%22Monthly%20statistics%20selected%22%20-%3E%20%22Month%20selected%22%20%5Blabel%20%3D%20%22Select%20month%22%5D%0A%09%22Month%20selected%22%20-%3E%20%22Monthly%20statistics%20selected%22%20%5Blabel%20%3D%20%22Back%22%5D%0A%09%22Weekly%20statistics%20selected%22%20-%3E%20%22Week%20selected%22%20%5Blabel%20%3D%20%22Select%20week%22%5D%0A%09%22Week%20selected%22%20-%3E%20%22Weekly%20statistics%20selected%22%20%5Blabel%20%3D%20%22Back%22%5D%0A%09%22Week%20selected%22%20-%3E%20%22Transaction%20selected%22%20%5Blabel%20%3D%20%22Select%20transaction%22%5D%0A%09%22Month%20selected%22%20-%3E%20%22Transaction%20selected%22%20%5Blabel%20%3D%20%22Select%20transaction%22%5D%0A%09%22Transaction%20selected%22%20-%3E%20%22Week%20selected%22%20%5Blabel%20%3D%20%22Remove%20transaction%20from%20week%22%5D%0A%09%22Transaction%20selected%22%20-%3E%20%22Month%20selected%22%20%5Blabel%20%3D%20%22Remove%20transaction%20from%20month%22%5D%0A%09%22Transaction%20selected%22%20-%3E%20%22Month%20selected%22%20%5Blabel%20%3D%20%22Back%20to%20month%22%5D%0A%09%22Transaction%20selected%22%20-%3E%20%22Week%20selected%22%20%5Blabel%20%3D%20%22Back%20to%20week%22%5D%0A%09%22Bank%20account%20selected%22%20-%3E%20%22Adding%20manual%20transaction%22%20%5Blabel%20%3D%20%22Add%20manual%20transaction%22%5D%3B%0A%09%22Adding%20manual%20transaction%22%20-%3E%20%22Adding%20transaction%20amount%22%20%5Blabel%3D%20%22Add%20transaction%20amount%22%5D%3B%0A%09%22Adding%20transaction%20amount%22%20-%3E%20%22Adding%20transaction%20title%22%20%5Blabel%3D%22Add%20transaction%20title%22%5D%3B%0A%09%22Adding%20transaction%20title%22%20-%3E%20%22Bank%20account%20selected%22%20%5Blabel%3D%22Cancel%22%5D%0A%09%22Adding%20transaction%20amount%22%20-%3E%20%22Bank%20account%20selected%22%20%5Blabel%3D%22Cancel%22%5D%0A%09%22Adding%20transaction%20title%22%20-%3E%20%22Bank%20account%20selected%22%20%5Blabel%3D%22Added%20transaction%22%5D%0A%0A%7D%0A)
-
+```mermaid
+stateDiagram-v2
+    bal : Bank account list
+    aba: Adding bank account
+    aan: Adding account name
+    aac: Adding account currency
+    bas: Bank account selected
+    amttype: Selection transaction type
+    ubs: Uploading bank statement
+    msl: Monthly statistics - month list
+    mss: Monthly statistics - month selected
+    wsl: Weekly statistics - week list
+    wss: Weekly statistics - week selected
+    amta: Selection transaction amount
+    ts: Transaction selected
+    amttitle: Selection transaction title
+    [*] --> bal 
+    bal --> aba : Add bank account
+    aba --> bal : Back
+    aba --> aan : Add account name
+    aba --> bal : Cancel
+    aan --> aba : Back
+    aan --> aac : Adding account currency
+    aac --> aan : Back
+    aan --> bal : Cancel
+    aac --> bal : Added bank account
+    aac --> bal : Cancel
+    bal --> bas : Select bank account
+    bas --> bal : Back
+    bas --> amttype : Select add manual transaction
+    amttype --> bas: Cancel
+    amttype --> amta: Select transaction amount
+    amta --> bas: Cancel
+    amta --> amttitle: Select transaction title
+    amttitle --> bas: Cancel
+    amttitle --> bas: Finish adding transaction
+    bas --> msl: Select monthly statistics
+    msl --> bas: Back
+    msl --> msl: Change page
+    msl --> mss: Select month
+    mss --> msl: Back
+    mss --> ts: Select transaction
+    ts --> ts: Change transaction visibility
+    ts --> ts: Change transaction type 
+    ts --> mss: Transaction remove
+    ts --> mss: Back
+    bas --> wsl: Select weekly statistics
+    wsl --> bas: Back
+    wsl --> wsl: Change page
+    wsl --> wss: Select week
+    wss --> wsl: Back
+    ts --> wss: Back
+    bas --> ubs : Select upload bank statement
+    ubs --> bas : Cancel
+    ubs --> bas : Bank statement uploaded    
+    
+```
