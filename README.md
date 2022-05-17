@@ -4,7 +4,7 @@ A Telegram bot for tracking expenses. Available features:
 - Multi user account support. You can give access to your family's budget to anyone from your family
 - Multi bank account support with different currencies. Currently only USD and TRY are supported
 - Montly and weekly expense / income statistics
-- Allow to exclude specific transactions from statistics. Example use case - your friends asked you to pay for something online and then returned you this amount in cash. You don't want to count this transaction as a spending.
+- Allow to exclude specific transactions from statistics. Example use case - your friends asked you to pay for something online and then returned you this amount in cash or in crypto. You don't want to count this transaction as a spending.
 - Parsing bank statements (currently only for Yapı Kredi Bankası, but other banks can be added)
 - Manual transacton entries for tracking cash
 - Smooth app-like bot experience using [editMessageReplyMarkup](https://core.telegram.org/bots/api#editmessagereplymarkup)
@@ -19,6 +19,7 @@ A Telegram bot for tracking expenses. Available features:
 
 ### Finite state machine visualization
 
+The visualization is generated using [mermaid.js](https://github.blog/2022-02-14-include-diagrams-markdown-files-mermaid/)
 ```mermaid
 stateDiagram-v2
     bal : Bank account list
@@ -53,6 +54,7 @@ stateDiagram-v2
     amttype --> amta: Select transaction amount
     amta --> bas: Cancel
     amta --> amttitle: Select transaction title
+    amta --> amttitle: Type transaction title
     amttitle --> bas: Cancel
     amttitle --> bas: Finish adding transaction
     bas --> msl: Select monthly statistics
