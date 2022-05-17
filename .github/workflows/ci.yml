@@ -34,7 +34,7 @@ jobs:
         run: npm ci
 
       - name: Test
-        run: npx jest --runInBand
+        run: npx prisma db push && npx jest --runInBand
         env:
           DATABASE_USER: root
           NODE_ENV: test
