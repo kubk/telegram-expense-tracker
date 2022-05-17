@@ -33,3 +33,7 @@ jobs:
 
     - name: Test
       run: npm run test
+      env:
+        DATABASE_NAME: yapi
+        NODE_ENV: test
+        DATABASE_URL: postgresql://root:toor@localhost:5432/yapi?schema=public
