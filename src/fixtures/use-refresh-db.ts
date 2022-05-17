@@ -25,11 +25,11 @@ export const useRefreshDb = () => {
   });
 
   beforeEach(async () => {
-    await execPromise(`dropdb ${getEnvSafe('DATABASE_NAME')}`);
-    await execPromise(`createdb ${getEnvSafe('DATABASE_NAME')}`);
+    prisma.$connect();
+    await prisma.$executeRawUnsafe(`DROP DATABASE IF EXISTS ${getEnvSafe('DATABASE_NAME')}`)
+    await prisma.$executeRawUnsafe(`CREATE DATABASE ${getEnvSafe('DATABASE_NAME')}`)
     await execPromise(`npx prisma db push`);
 
-    prisma.$connect();
 
     await prisma.family.create({
       data: {
