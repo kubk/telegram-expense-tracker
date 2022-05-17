@@ -1,6 +1,6 @@
 import { Context, Markup } from 'telegraf';
 import axios from 'axios';
-import { parseTransactions } from '../../yapi-kredi-parser/parse-transactions';
+import { parseTransactions } from '../../bank-statement-parser/yapi-kredi-parser/parse-transactions';
 import {
   bankRepository,
   transactionRepository,

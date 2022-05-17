@@ -1,5 +1,5 @@
 import { readFileSync, existsSync } from 'fs';
-import { parseTransactions } from '../src/yapi-kredi-parser/parse-transactions';
+import { parseTransactions } from '../src/bank-statement-parser/yapi-kredi-parser/parse-transactions';
 import { transactionRepository } from '../src/container';
 
 /**

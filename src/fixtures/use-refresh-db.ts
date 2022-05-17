@@ -17,6 +17,8 @@ export const fixtures = {
   },
 };
 
+const now = DateTime.fromISO('2022-04-05');
+
 export const useRefreshDb = () => {
   afterEach(() => {
     prisma.$disconnect();
@@ -62,21 +64,21 @@ export const useRefreshDb = () => {
               transactions: {
                 create: [
                   {
-                    createdAt: new Date(),
+                    createdAt: now.toJSDate(),
                     amount: -550,
                     currency: Currency.TRY,
                     title: 'Migros Buy',
                     info: 'Other',
                   },
                   {
-                    createdAt: new Date(),
+                    createdAt: now.toJSDate(),
                     amount: -5550,
                     currency: Currency.TRY,
                     title: 'Digital Ocean',
                     info: 'Other',
                   },
                   {
-                    createdAt: new Date(),
+                    createdAt: now.toJSDate(),
                     amount: -5550,
                     currency: Currency.TRY,
                     title: 'Payment for UK certificate',
@@ -94,21 +96,21 @@ export const useRefreshDb = () => {
               transactions: {
                 create: [
                   {
-                    createdAt: new Date(),
+                    createdAt: now.toJSDate(),
                     amount: -1000,
                     currency: Currency.USD,
                     title: 'Amazon',
                     info: 'Other',
                   },
                   {
-                    createdAt: new Date(),
+                    createdAt: now.toJSDate(),
                     amount: 2000 * 100,
                     currency: Currency.USD,
                     title: 'USDT withdraw',
                     info: 'Other',
                   },
                   {
-                    createdAt: new Date(),
+                    createdAt: now.toJSDate(),
                     amount: -100 * 100,
                     currency: Currency.USD,
                     title: 'Payment for Digital Ocean',
@@ -116,7 +118,7 @@ export const useRefreshDb = () => {
                     isCountable: false,
                   },
                   {
-                    createdAt: DateTime.now().minus({ month: 1 }).toJSDate(),
+                    createdAt: now.minus({ month: 1 }).toJSDate(),
                     amount: 500 * 100,
                     currency: Currency.USD,
                     title: 'I Talki',
