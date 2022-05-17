@@ -25,11 +25,21 @@ export const useRefreshDb = () => {
   });
 
   beforeEach(async () => {
-    await execPromise(`dropdb ${getEnvSafe('DATABASE_NAME')}`);
-    await execPromise(`createdb ${getEnvSafe('DATABASE_NAME')}`);
-    await execPromise(`npx prisma db push`);
-
     prisma.$connect();
+    await prisma.$executeRawUnsafe(`
+CREATE OR REPLACE FUNCTION truncate_tables(username IN VARCHAR) RETURNS void AS $$
+DECLARE
+    statements CURSOR FOR
+        SELECT tablename FROM pg_tables
+        WHERE tableowner = username AND schemaname = 'public';
+BEGIN
+    FOR stmt IN statements LOOP
+        EXECUTE 'TRUNCATE TABLE ' || quote_ident(stmt.tablename) || ' CASCADE;';
+    END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+    `);
+    await prisma.$executeRawUnsafe(`SELECT truncate_tables('${getEnvSafe('DATABASE_USER')}')`)
 
     await prisma.family.create({
       data: {
