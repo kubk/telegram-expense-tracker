@@ -28,3 +28,9 @@ jobs:
         run: psql -h postgres -d postgres_db -U postgres_user -c 'SELECT 1;'
         env:
           PGPASSWORD: postgres_password
+
+      - name: Recreate db
+      run: createdb yapi && dropdb yapi && echo 'Success'
+      env:
+        PGPASSWORD: postgres_password
+
