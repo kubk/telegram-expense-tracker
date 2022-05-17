@@ -1,13 +1,11 @@
-import { PrismaClient } from '@prisma/client';
 import { v4 } from 'uuid';
 import { UserState } from '../telegram-bot/user-state';
 import { assert } from 'ts-essentials';
+import { prisma } from '../container';
 
 export class UserRepository {
-  constructor(private prisma: PrismaClient) {}
-
   getUserByTelegramId(telegramId: number) {
-    return this.prisma.user.findFirst({
+    return prisma.user.findFirst({
       where: {
         telegramProfile: {
           telegramId: telegramId,
@@ -27,7 +25,7 @@ export class UserRepository {
   }
 
   getUserList() {
-    return this.prisma.user.findMany();
+    return prisma.user.findMany();
   }
 
   async createUserIfNotExists(telegramId: number) {
@@ -36,7 +34,7 @@ export class UserRepository {
       return user;
     }
 
-    return this.prisma.user.create({
+    return prisma.user.create({
       data: {
         id: v4(),
         telegramProfile: {
@@ -55,7 +53,7 @@ export class UserRepository {
   }
 
   setUserState(telegramProfileId: string, state: UserState) {
-    return this.prisma.telegramProfile.update({
+    return prisma.telegramProfile.update({
       data: {
         state,
       },

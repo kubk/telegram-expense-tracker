@@ -1,7 +1,6 @@
 import {
   Currency,
   Prisma,
-  PrismaClient,
   Transaction,
   TransactionSource,
 } from '@prisma/client';
@@ -11,6 +10,7 @@ import {
   CalcPaginationParams,
   createPaginatedResult,
 } from '../lib/pagination/pagination';
+import { prisma } from '../container';
 
 export type UserTransactionExpenseRowItem = {
   outcome: number;
@@ -39,8 +39,6 @@ export enum StatisticGroupByType {
 }
 
 export class TransactionRepository {
-  constructor(private prisma: PrismaClient) {}
-
   async getUserTransactionsExpensesGrouped(options: {
     userId: string;
     bankAccountId: string;
@@ -49,7 +47,7 @@ export class TransactionRepository {
     const { userId, bankAccountId, type } = options;
 
     if (type === StatisticGroupByType.Week) {
-      return this.prisma.$queryRaw<Array<UserTransactionExpenseRowItem>>`
+      return prisma.$queryRaw<Array<UserTransactionExpenseRowItem>>`
         with first_transaction_date AS
                (select min(t."createdAt") AS createdAt
                 from "Family"
@@ -89,7 +87,7 @@ export class TransactionRepository {
     }
 
     if (type === StatisticGroupByType.Month) {
-      return this.prisma.$queryRaw<Array<UserTransactionExpenseRowItem>>`
+      return prisma.$queryRaw<Array<UserTransactionExpenseRowItem>>`
         with first_transaction_date AS
                (select min(t."createdAt") AS createdAt
                 from "Family"
@@ -157,16 +155,16 @@ export class TransactionRepository {
         case UserTransactionListFilter.NoFilter:
           return Prisma.empty;
         case UserTransactionListFilter.OnlyIncome:
-          return Prisma.sql`AND t.amount > 0`;
+          return Prisma.sql`and t.amount > 0`;
         case UserTransactionListFilter.OnlyOutcome:
-          return Prisma.sql`AND t.amount < 0`;
+          return Prisma.sql`and t.amount < 0`;
         default:
           throw new UnreachableCaseError(transactionType);
       }
     })();
 
     const [countResult, dataResult] = await Promise.all([
-      this.prisma.$queryRaw<Array<{ count: number }>>`
+      prisma.$queryRaw<Array<{ count: number }>>`
         select count(t.id) as count
         from "Family"
           left join "User" u
@@ -178,7 +176,7 @@ export class TransactionRepository {
           and t."createdAt" between ${dateFrom}
           and ${dateTo}
       `,
-      this.prisma.$queryRaw<Transaction[]>`
+      prisma.$queryRaw<Transaction[]>`
         select t.*
         from "Family"
                left join "User" u on "Family".id = u."familyId"
@@ -207,7 +205,7 @@ export class TransactionRepository {
     currency: Currency;
     title: string;
   }) {
-    return this.prisma.transaction.create({
+    return prisma.transaction.create({
       data: {
         createdAt: new Date(),
         bankAccountId: input.bankAccountId,
@@ -250,8 +248,8 @@ export class TransactionRepository {
     assert(maxTransactionDate);
     assert(minTransactionDate);
 
-    const [removeResult, addResult] = await this.prisma.$transaction([
-      this.prisma.transaction.deleteMany({
+    const [removeResult, addResult] = await prisma.$transaction([
+      prisma.transaction.deleteMany({
         where: {
           bankAccountId,
           source: TransactionSource.IMPORTED,
@@ -261,7 +259,7 @@ export class TransactionRepository {
           },
         },
       }),
-      this.prisma.transaction.createMany({
+      prisma.transaction.createMany({
         data: transactions.map((input) => ({
           createdAt: input.createdAt,
           bankAccountId: input.bankAccountId,
@@ -278,7 +276,7 @@ export class TransactionRepository {
   }
 
   async getTransaction(transactionId: string) {
-    return this.prisma.transaction.findUnique({
+    return prisma.transaction.findUnique({
       where: {
         id: transactionId,
       },
@@ -286,7 +284,7 @@ export class TransactionRepository {
   }
 
   deleteTransaction(transactionId: string) {
-    return this.prisma.transaction.delete({
+    return prisma.transaction.delete({
       where: {
         id: transactionId,
       },
@@ -297,7 +295,7 @@ export class TransactionRepository {
     const transaction = await this.getTransaction(transactionId);
     assert(transaction);
 
-    return this.prisma.transaction.update({
+    return prisma.transaction.update({
       where: { id: transactionId },
       data: { isCountable: !transaction.isCountable },
     });
@@ -307,7 +305,7 @@ export class TransactionRepository {
     const transaction = await this.getTransaction(transactionId);
     assert(transaction);
 
-    return this.prisma.transaction.update({
+    return prisma.transaction.update({
       where: { id: transactionId },
       data: { amount: -1 * transaction.amount },
     });

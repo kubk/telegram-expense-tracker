@@ -79,11 +79,23 @@ export const textHandler = async (ctx: Context) => {
       bankAccountId: state.bankAccountId,
       amount: amountWithSign,
     });
-    await ctx.reply(
-      withCancelText(`Please enter transaction title. Examples:
-Rent
-Taxi`)
-    );
+    const topTransactionTitles =
+      await bankRepository.getMostUsedTransactionTitles(
+        state.bankAccountId,
+        state.transactionType
+      );
+
+    const text = withCancelText(`Please type or select transaction title`);
+    if (topTransactionTitles.length) {
+      await ctx.reply(
+        text,
+        Markup.keyboard(
+          topTransactionTitles.map((transaction) => transaction.title)
+        ).oneTime()
+      );
+    } else {
+      await ctx.reply(text);
+    }
   }
 
   if (isAddingTransactionTitleState(state)) {
@@ -101,6 +113,7 @@ Taxi`)
     await userRepository.setUserState(user.telegramProfile.id, {
       type: 'initial',
     });
+    await ctx.reply('Done!', Markup.removeKeyboard());
     await ctx.reply(
       `Hello 👋\nThis is a Telegram bot to track your expenses`,
       Markup.inlineKeyboard(buildBankAccountMenu(bankAccount.id))

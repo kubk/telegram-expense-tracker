@@ -1,10 +1,8 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../container';
 
 export class FamilyRepository {
-  constructor(private prisma: PrismaClient) {}
-
   getFamilyListWithUsersAndProfiles() {
-    return this.prisma.family.findMany({
+    return prisma.family.findMany({
       include: {
         users: {
           include: {

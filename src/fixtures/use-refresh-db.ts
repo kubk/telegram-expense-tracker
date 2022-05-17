@@ -1,5 +1,5 @@
 import { prisma } from '../container';
-import { Currency } from '@prisma/client';
+import { Currency, TransactionSource } from '@prisma/client';
 import { execPromise } from '../lib/node/exec-promise';
 import { DateTime } from 'luxon';
 import { getEnvSafe } from '../lib/env/env';
@@ -81,6 +81,7 @@ export const useRefreshDb = () => {
                     currency: Currency.TRY,
                     title: 'Payment for UK certificate',
                     info: 'Other',
+                    source: TransactionSource.MANUAL,
                     isCountable: false,
                   },
                 ],

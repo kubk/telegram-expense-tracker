@@ -1,10 +1,43 @@
-import { BankAccount, Currency, PrismaClient } from '@prisma/client';
+import {
+  BankAccount,
+  Currency,
+  Prisma,
+  TransactionSource,
+} from '@prisma/client';
+import { prisma } from '../container';
+import { TransactionType } from './transaction-repository';
+import { UnreachableCaseError } from 'ts-essentials';
+
+const getTransactionTypeFilter = (transactionType: TransactionType) => {
+  switch (transactionType) {
+    case TransactionType.TopUp:
+      return Prisma.sql`t.amount > 0`;
+    case TransactionType.Expense:
+      return Prisma.sql`t.amount < 0`;
+    default:
+      throw new UnreachableCaseError(transactionType);
+  }
+};
 
 export class BankAccountRepository {
-  constructor(private prisma: PrismaClient) {}
+  async getMostUsedTransactionTitles(
+    bankAccountId: string,
+    transactionType: TransactionType
+  ) {
+    return prisma.$queryRaw<Array<{ title: string }>>`
+      select t.title
+      from "Transaction" t
+      where t.source = ${TransactionSource.MANUAL}
+          and t."bankAccountId" = ${bankAccountId}
+          and ${getTransactionTypeFilter(transactionType)}
+      group by t.title
+      order by count(*) desc
+      limit 15
+    `;
+  }
 
   async getUserBankAccounts(userId: string) {
-    const result = await this.prisma.$queryRaw<BankAccount[]>`
+    const result = await prisma.$queryRaw<BankAccount[]>`
       select ba.*
       from "Family"
              left join "User" u on "Family".id = u."familyId"
@@ -21,7 +54,7 @@ export class BankAccountRepository {
   }
 
   getBankAccountById(bankAccountId: string) {
-    return this.prisma.bankAccount.findFirst({
+    return prisma.bankAccount.findFirst({
       where: {
         id: bankAccountId,
       },
@@ -33,7 +66,7 @@ export class BankAccountRepository {
     currency: Currency;
     familyId: string;
   }) {
-    return this.prisma.bankAccount.create({
+    return prisma.bankAccount.create({
       data: {
         currency: input.currency,
         name: input.name,

@@ -9,7 +9,6 @@ import { isDev } from './lib/env/env';
 
 export const config = {
   logSql: false,
-  logTelegram: false,
   pagination: {
     perPage: 10,
   },
@@ -18,13 +17,12 @@ export const config = {
 export const prisma = new PrismaClient({
   log: config.logSql ? ['query', 'info', 'warn', 'error'] : undefined,
 });
-
-export const userRepository = new UserRepository(prisma);
-export const familyRepository = new FamilyRepository(prisma);
-export const bankRepository = new BankAccountRepository(prisma);
-export const transactionRepository = new TransactionRepository(prisma);
+export const userRepository = new UserRepository();
+export const familyRepository = new FamilyRepository();
+export const bankRepository = new BankAccountRepository();
+export const transactionRepository = new TransactionRepository();
 export const cache = createCache({
   cachePath: `${__dirname}/../cache`,
   zip: !isDev(),
 });
-export const bot = createBot({ logTelegram: true });
+export const bot = createBot({ logTelegram: isDev() });
