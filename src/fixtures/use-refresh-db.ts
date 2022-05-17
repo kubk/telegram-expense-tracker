@@ -17,17 +17,29 @@ export const fixtures = {
   },
 };
 
+const now = DateTime.fromISO('2022-04-05');
+
 export const useRefreshDb = () => {
   afterEach(() => {
     prisma.$disconnect();
   });
 
   beforeEach(async () => {
-    await execPromise(`dropdb ${getEnvSafe('DATABASE_NAME')}`);
-    await execPromise(`createdb ${getEnvSafe('DATABASE_NAME')}`);
-    await execPromise(`npx prisma db push`);
-
     prisma.$connect();
+    await prisma.$executeRawUnsafe(`
+CREATE OR REPLACE FUNCTION truncate_tables(username IN VARCHAR) RETURNS void AS $$
+DECLARE
+    statements CURSOR FOR
+        SELECT tablename FROM pg_tables
+        WHERE tableowner = username AND schemaname = 'public';
+BEGIN
+    FOR stmt IN statements LOOP
+        EXECUTE 'TRUNCATE TABLE ' || quote_ident(stmt.tablename) || ' CASCADE;';
+    END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+    `);
+    await prisma.$executeRawUnsafe(`SELECT truncate_tables('${getEnvSafe('DATABASE_USER')}')`)
 
     await prisma.family.create({
       data: {
@@ -62,21 +74,21 @@ export const useRefreshDb = () => {
               transactions: {
                 create: [
                   {
-                    createdAt: new Date(),
+                    createdAt: now.toJSDate(),
                     amount: -550,
                     currency: Currency.TRY,
                     title: 'Migros Buy',
                     info: 'Other',
                   },
                   {
-                    createdAt: new Date(),
+                    createdAt: now.toJSDate(),
                     amount: -5550,
                     currency: Currency.TRY,
                     title: 'Digital Ocean',
                     info: 'Other',
                   },
                   {
-                    createdAt: new Date(),
+                    createdAt: now.toJSDate(),
                     amount: -5550,
                     currency: Currency.TRY,
                     title: 'Payment for UK certificate',
@@ -94,21 +106,21 @@ export const useRefreshDb = () => {
               transactions: {
                 create: [
                   {
-                    createdAt: new Date(),
+                    createdAt: now.toJSDate(),
                     amount: -1000,
                     currency: Currency.USD,
                     title: 'Amazon',
                     info: 'Other',
                   },
                   {
-                    createdAt: new Date(),
+                    createdAt: now.toJSDate(),
                     amount: 2000 * 100,
                     currency: Currency.USD,
                     title: 'USDT withdraw',
                     info: 'Other',
                   },
                   {
-                    createdAt: new Date(),
+                    createdAt: now.toJSDate(),
                     amount: -100 * 100,
                     currency: Currency.USD,
                     title: 'Payment for Digital Ocean',
@@ -116,7 +128,7 @@ export const useRefreshDb = () => {
                     isCountable: false,
                   },
                   {
-                    createdAt: DateTime.now().minus({ month: 1 }).toJSDate(),
+                    createdAt: now.minus({ month: 1 }).toJSDate(),
                     amount: 500 * 100,
                     currency: Currency.USD,
                     title: 'I Talki',

@@ -124,17 +124,26 @@ test('transactions pagination', async () => {
 });
 
 test('transaction monthly starts - TRY bank account', async () => {
-  const expectedTryBankAccountStats: UserTransactionExpenseRowItem[] = [
-    {
-      difference: -6100,
+  const expectedTryBankAccountStats = expect.arrayContaining([
+    expect.objectContaining({
+      difference: 0,
       income: 0,
-      outcome: -6100,
+      outcome: 0,
       groupname: 'May',
       groupyear: 2022,
       groupnumber: 5,
+      currency: null,
+    }),
+    expect.objectContaining({
+      difference: -6100,
+      income: 0,
+      outcome: -6100,
+      groupname: 'Apr',
+      groupyear: 2022,
+      groupnumber: 4,
       currency: 'TRY',
-    },
-  ];
+    }),
+  ]);
 
   expect(
     await transactionRepository.getUserTransactionsExpensesGrouped({
@@ -154,53 +163,62 @@ test('transaction monthly starts - TRY bank account', async () => {
 });
 
 test('transaction weekly starts - USD bank account', async () => {
-  const expectedTryBankAccountStats: UserTransactionExpenseRowItem[] = [
-    {
+  const expectedTryBankAccountStats = expect.arrayContaining([
+    expect.objectContaining({
       currency: 'USD',
       difference: 199000,
+      groupname: 'W.14',
+      groupnumber: 14,
       groupyear: 2022,
-      groupname: 'W.19',
-      groupnumber: 19,
       income: 200000,
       outcome: -1000,
-    },
-    {
+    }),
+    expect.objectContaining({
       currency: null,
       difference: 0,
-      groupname: 'W.18',
-      groupnumber: 18,
+      groupname: 'W.13',
+      groupnumber: 13,
       groupyear: 2022,
       income: 0,
       outcome: 0,
-    },
-    {
+    }),
+    expect.objectContaining({
       currency: null,
       difference: 0,
-      groupyear: 2022,
-      groupname: 'W.17',
-      groupnumber: 17,
-      income: 0,
-      outcome: 0,
-    },
-    {
-      currency: null,
-      difference: 0,
-      groupname: 'W.16',
-      groupnumber: 16,
+      groupname: 'W.12',
+      groupnumber: 12,
       groupyear: 2022,
       income: 0,
       outcome: 0,
-    },
-    {
+    }),
+    expect.objectContaining({
+      currency: null,
+      difference: 0,
+      groupyear: 2022,
+      groupname: 'W.11',
+      groupnumber: 11,
+      income: 0,
+      outcome: 0,
+    }),
+    expect.objectContaining({
+      currency: null,
+      difference: 0,
+      groupname: 'W.10',
+      groupnumber: 10,
+      groupyear: 2022,
+      income: 0,
+      outcome: 0,
+    }),
+    expect.objectContaining({
       currency: 'USD',
       difference: 50000,
-      groupname: 'W.15',
-      groupnumber: 15,
+      groupname: 'W.9',
+      groupnumber: 9,
       groupyear: 2022,
       income: 50000,
       outcome: 0,
-    },
-  ];
+    }),
+  ]);
 
   expect(
     await transactionRepository.getUserTransactionsExpensesGrouped({
@@ -220,26 +238,26 @@ test('transaction weekly starts - USD bank account', async () => {
 });
 
 test('transaction monthly stats - USD bank account', async () => {
-  const expectedUsdBankAccountStats: UserTransactionExpenseRowItem[] = [
-    {
+  const expectedUsdBankAccountStats = expect.arrayContaining([
+    expect.objectContaining({
       difference: 199000,
       income: 200000,
       outcome: -1000,
-      groupname: 'May',
-      groupyear: 2022,
-      groupnumber: 5,
-      currency: 'USD',
-    },
-    {
-      difference: 50000,
-      income: 50000,
-      outcome: 0,
       groupname: 'Apr',
       groupyear: 2022,
       groupnumber: 4,
       currency: 'USD',
-    },
-  ];
+    }),
+    expect.objectContaining({
+      difference: 50000,
+      income: 50000,
+      outcome: 0,
+      groupname: 'Mar',
+      groupyear: 2022,
+      groupnumber: 3,
+      currency: 'USD',
+    }),
+  ]);
 
   expect(
     await transactionRepository.getUserTransactionsExpensesGrouped({
