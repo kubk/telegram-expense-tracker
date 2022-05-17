@@ -32,7 +32,7 @@ jobs:
       run: npm ci
 
     - name: Test
-      run: jest --runInBand
+      run: npx jest --runInBand
       env:
         DATABASE_NAME: yapi
         NODE_ENV: test
