@@ -8,7 +8,6 @@ export const cancelHandler = async (ctx: Context) => {
   const user = await userRepository.getUserByTelegramIdOrThrow(
     ctx.message.from.id
   );
-  assert(user.telegramProfile);
   await userRepository.setUserState(user.telegramProfile.id, {
     type: 'initial',
   });

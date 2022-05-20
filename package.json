@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "export $(cat .env | xargs) && jest --runInBand",
+    "test:db:migrate": "export $(cat .env | xargs) && npx prisma migrate dev --name init",
     "test:update-snapshots": "export $(cat .env | xargs) && jest --runInBand --updateSnapshot",
     "dev:db:format": "export $(cat .env.dev | xargs) && npx prisma format",
     "dev:db:migrate": "export $(cat .env.dev | xargs) && npx prisma migrate dev --name init",
@@ -44,6 +45,6 @@
     "prisma": "^3.13.0",
     "ts-jest": "^27.1.4",
     "ts-node": "^10.7.0",
-    "typescript": "^4.6.3"
+    "typescript": "^4.6.4"
   }
 }

@@ -68,7 +68,7 @@ export const transactionListHandler = async (ctx: Context) => {
       transactionType: transactionType,
     },
     pagination: {
-      perPage: 10,
+      perPage: user.telegramProfile.perPage,
       page: page,
     },
   });

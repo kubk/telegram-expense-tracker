@@ -39,7 +39,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
     `);
-    await prisma.$executeRawUnsafe(`SELECT truncate_tables('${getEnvSafe('DATABASE_USER')}')`)
+    await prisma.$executeRawUnsafe(
+      `SELECT truncate_tables('${getEnvSafe('DATABASE_USER')}')`
+    );
 
     await prisma.family.create({
       data: {

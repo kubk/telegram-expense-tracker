@@ -33,7 +33,6 @@ export const transactionAddManualSelectTypeHandler = async (ctx: Context) => {
   const user = await userRepository.getUserByTelegramIdOrThrow(
     ctx.callbackQuery.from.id
   );
-  assert(user.telegramProfile);
 
   await ctx.reply(
     withCancelText(`Please select transaction type`),

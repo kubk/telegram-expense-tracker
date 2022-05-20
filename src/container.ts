@@ -9,9 +9,6 @@ import { isDev } from './lib/env/env';
 
 export const config = {
   logSql: false,
-  pagination: {
-    perPage: 10,
-  },
 };
 
 export const prisma = new PrismaClient({

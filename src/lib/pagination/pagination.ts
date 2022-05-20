@@ -32,11 +32,11 @@ export const createPaginatedResult = <T>(options: {
 
 export type CalcPaginationParams = {
   page: number;
-  perPage?: number;
+  perPage: number;
 };
 
 export const calcPaginationOffset = (pagination: CalcPaginationParams) => {
-  const { page, perPage = config.pagination.perPage } = pagination;
+  const { page, perPage } = pagination;
 
   return { offset: (page - 1) * perPage, perPage };
 };

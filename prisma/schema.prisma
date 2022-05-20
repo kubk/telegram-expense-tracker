@@ -32,6 +32,7 @@ model TelegramProfile {
   id         String @id @default(uuid())
   telegramId Int
   state      Json
+  perPage    Int    @default(10)
   userId     String @unique
   user       User   @relation(fields: [userId], references: [id])
 }

@@ -15,7 +15,6 @@ export const bankStatementUploadedHandler = async (ctx: Context) => {
   const user = await userRepository.getUserByTelegramIdOrThrow(
     ctx.message.from.id
   );
-  assert(user.telegramProfile);
   const { state } = user.telegramProfile;
   assert(isUploadingBankStatement(state));
 

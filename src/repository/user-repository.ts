@@ -21,7 +21,9 @@ export class UserRepository {
   async getUserByTelegramIdOrThrow(telegramId: number) {
     const user = await this.getUserByTelegramId(telegramId);
     assert(user);
-    return user;
+    const telegramProfile = user.telegramProfile;
+    assert(telegramProfile);
+    return { ...user, telegramProfile };
   }
 
   getUserList() {

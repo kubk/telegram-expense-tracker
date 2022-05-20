@@ -15,6 +15,7 @@ test('transaction list for user and ba', async () => {
     bankAccountId: fixtures.bankAccounts.user_1_ba_try,
     pagination: {
       page: 1,
+      perPage: 10,
     },
     filter: {
       transactionType: UserTransactionListFilter.NoFilter,
@@ -29,6 +30,7 @@ test('transaction list for user and ba', async () => {
     bankAccountId: fixtures.bankAccounts.user_1_ba_try,
     pagination: {
       page: 1,
+      perPage: 10,
     },
     filter: {
       transactionType: UserTransactionListFilter.NoFilter,
@@ -43,6 +45,7 @@ test('transaction list for user and ba', async () => {
     bankAccountId: fixtures.bankAccounts.user_1_ba_usd,
     pagination: {
       page: 1,
+      perPage: 10,
     },
     filter: {
       transactionType: UserTransactionListFilter.NoFilter,
@@ -57,6 +60,7 @@ test('transaction list for user and ba', async () => {
     bankAccountId: fixtures.bankAccounts.user_1_ba_usd,
     pagination: {
       page: 1,
+      perPage: 10,
     },
     filter: {
       transactionType: UserTransactionListFilter.OnlyOutcome,
@@ -71,6 +75,7 @@ test('transaction list for user and ba', async () => {
     bankAccountId: fixtures.bankAccounts.user_1_ba_usd,
     pagination: {
       page: 1,
+      perPage: 10,
     },
     filter: {
       transactionType: UserTransactionListFilter.OnlyIncome,
@@ -283,6 +288,7 @@ test('create manual transaction', async () => {
       bankAccountId: fixtures.bankAccounts.user_1_ba_try,
       pagination: {
         page: 1,
+        perPage: 10,
       },
       filter: {
         transactionType: UserTransactionListFilter.NoFilter,
@@ -304,6 +310,7 @@ test('create manual transaction', async () => {
     bankAccountId: fixtures.bankAccounts.user_1_ba_try,
     pagination: {
       page: 1,
+      perPage: 10,
     },
     filter: {
       transactionType: UserTransactionListFilter.NoFilter,

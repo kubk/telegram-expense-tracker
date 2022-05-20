@@ -12,7 +12,6 @@ export const transactionAddManualSelectAmountHandler = async (ctx: Context) => {
   const user = await userRepository.getUserByTelegramIdOrThrow(
     ctx.callbackQuery.from.id
   );
-  assert(user.telegramProfile);
 
   const transactionType = (ctx as any).match[1];
   if (!transactionType) {

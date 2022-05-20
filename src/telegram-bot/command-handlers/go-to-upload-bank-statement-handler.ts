@@ -13,7 +13,6 @@ export const goToUploadBankStatementHandler = async (ctx: Context) => {
   const user = await userRepository.getUserByTelegramIdOrThrow(
     ctx.callbackQuery.from.id
   );
-  assert(user.telegramProfile);
 
   await userRepository.setUserState(user.telegramProfile.id, {
     type: 'uploadingBankStatement',

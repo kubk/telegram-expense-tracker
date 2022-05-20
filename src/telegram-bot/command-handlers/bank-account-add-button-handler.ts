@@ -8,7 +8,6 @@ export const bankAccountAddButtonHandler = async (ctx: Context) => {
   const user = await userRepository.getUserByTelegramIdOrThrow(
     ctx.callbackQuery.from.id
   );
-  assert(user.telegramProfile);
   await ctx.reply(withCancelText(`Please send me the account name`));
   await userRepository.setUserState(user.telegramProfile.id, {
     type: 'addingBankAccountName',
