@@ -103,13 +103,21 @@ export const buildTransactionPaginatedResult = (options: {
   const backButtonInlineQuery = getBackButtonInlineQuery(type);
   const backButtonTitle = getBackButtonTitle(type);
 
-  const sortByButtons = [
-    { text: 'Date', field: TransactionSortField.Date },
-    { text: 'Amount', field: TransactionSortField.Amount },
+  const sortButtons = [
+    {
+      text: 'Date',
+      field: TransactionSortField.Date,
+      defaultDirection: TransactionSortDirection.Desc,
+    },
+    {
+      text: 'Amount',
+      field: TransactionSortField.Amount,
+      defaultDirection: TransactionSortDirection.Asc,
+    },
   ];
 
   return [
-    sortByButtons.map(({ text, field }) =>
+    sortButtons.map(({ text, field, defaultDirection }) =>
       Markup.button.callback(
         `${text} ${sortField === field ? getSortIcon(sortDirection) : ''}️`,
         generateTransactionListLink({
@@ -122,7 +130,7 @@ export const buildTransactionPaginatedResult = (options: {
           sortDirection:
             sortField === field
               ? getOppositeDirection(sortDirection)
-              : TransactionSortDirection.Desc,
+              : defaultDirection,
           page: 1,
         })
       )
