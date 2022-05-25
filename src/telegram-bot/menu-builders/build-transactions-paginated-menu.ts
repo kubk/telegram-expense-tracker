@@ -3,12 +3,15 @@ import { Markup } from 'telegraf';
 import { BotButtons, BotCallbackQuery } from '../bot-action';
 import {
   StatisticGroupByType,
+  TransactionSortDirection,
+  TransactionSortField,
   UserTransactionListFilter,
 } from '../../repository/transaction-repository';
 import { formatMoney } from '../format-money';
 import { UnreachableCaseError } from 'ts-essentials';
 import { PaginatedResult } from '../../lib/pagination/pagination';
 import { boolNarrow } from '../../lib/typescript/bool-narrow';
+import { generateTransactionListLink } from './generate-transaction-list-link';
 
 const getTransactionSourceIcon = (transactionSource: TransactionSource) => {
   switch (transactionSource) {
@@ -54,6 +57,28 @@ const getBackButtonTitle = (type: StatisticGroupByType) => {
   }
 };
 
+const getSortIcon = (direction: TransactionSortDirection) => {
+  switch (direction) {
+    case TransactionSortDirection.Desc:
+      return '🔽';
+    case TransactionSortDirection.Asc:
+      return '🔼';
+    default:
+      throw new UnreachableCaseError(direction);
+  }
+};
+
+const getOppositeDirection = (direction: TransactionSortDirection) => {
+  switch (direction) {
+    case TransactionSortDirection.Desc:
+      return TransactionSortDirection.Asc;
+    case TransactionSortDirection.Asc:
+      return TransactionSortDirection.Desc;
+    default:
+      throw new UnreachableCaseError(direction);
+  }
+};
+
 export const buildTransactionPaginatedResult = (options: {
   transactionsPaginated: PaginatedResult<Transaction>;
   type: StatisticGroupByType;
@@ -61,6 +86,8 @@ export const buildTransactionPaginatedResult = (options: {
   groupYear: number;
   groupNumber: number;
   filter: UserTransactionListFilter;
+  sortDirection: TransactionSortDirection;
+  sortField: TransactionSortField;
 }) => {
   const {
     transactionsPaginated,
@@ -69,12 +96,37 @@ export const buildTransactionPaginatedResult = (options: {
     groupNumber,
     groupYear,
     filter,
+    sortDirection,
+    sortField,
   } = options;
 
   const backButtonInlineQuery = getBackButtonInlineQuery(type);
   const backButtonTitle = getBackButtonTitle(type);
 
+  const sortByButtons = [
+    { text: 'Date', field: TransactionSortField.Date },
+    { text: 'Amount', field: TransactionSortField.Amount },
+  ];
+
   return [
+    sortByButtons.map(({ text, field }) =>
+      Markup.button.callback(
+        `${text} ${sortField === field ? getSortIcon(sortDirection) : ''}️`,
+        generateTransactionListLink({
+          type,
+          bankAccountId: bankAccount.id,
+          groupYear,
+          groupNumber,
+          filter,
+          sortField: field,
+          sortDirection:
+            sortField === field
+              ? getOppositeDirection(sortDirection)
+              : TransactionSortDirection.Desc,
+          page: 1,
+        })
+      )
+    ),
     ...transactionsPaginated.items.map((transaction) => {
       const money = formatMoney({
         amount: transaction.amount,
@@ -95,13 +147,31 @@ export const buildTransactionPaginatedResult = (options: {
       transactionsPaginated.previousPage !== null
         ? Markup.button.callback(
             `← Page ${transactionsPaginated.previousPage} / ${transactionsPaginated.totalPages}`,
-            `${type}:${bankAccount.id}:${groupYear}:${groupNumber}:${filter}:${transactionsPaginated.previousPage}`
+            generateTransactionListLink({
+              type,
+              bankAccountId: bankAccount.id,
+              groupYear,
+              groupNumber,
+              filter,
+              sortField,
+              sortDirection,
+              page: transactionsPaginated.previousPage,
+            })
           )
         : null,
       transactionsPaginated.nextPage !== null
         ? Markup.button.callback(
             `Page ${transactionsPaginated.nextPage} / ${transactionsPaginated.totalPages} →`,
-            `${type}:${bankAccount.id}:${groupYear}:${groupNumber}:${filter}:${transactionsPaginated.nextPage}`
+            generateTransactionListLink({
+              type,
+              bankAccountId: bankAccount.id,
+              groupYear,
+              groupNumber,
+              filter,
+              sortField,
+              sortDirection,
+              page: transactionsPaginated.nextPage,
+            })
           )
         : null,
     ].filter(boolNarrow),

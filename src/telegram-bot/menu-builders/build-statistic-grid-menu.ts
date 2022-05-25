@@ -1,11 +1,14 @@
 import {
   StatisticGroupByType,
+  TransactionSortDirection,
+  TransactionSortField,
   UserTransactionExpenseRowItem,
   UserTransactionListFilter,
 } from '../../repository/transaction-repository';
 import { Currency } from '@prisma/client';
 import { Markup } from 'telegraf';
 import { formatMoney } from '../format-money';
+import { generateTransactionListLink } from './generate-transaction-list-link';
 
 export const buildStatisticGridMenu = (
   row: UserTransactionExpenseRowItem,
@@ -21,15 +24,42 @@ export const buildStatisticGridMenu = (
   return [
     Markup.button.callback(
       `${row.groupname} ${money}`,
-      `${type}:${bankAccount.id}:${row.groupyear}:${row.groupnumber}:${UserTransactionListFilter.NoFilter}:${page}`
+      generateTransactionListLink({
+        type,
+        bankAccountId: bankAccount.id,
+        groupYear: row.groupyear,
+        groupNumber: row.groupnumber,
+        filter: UserTransactionListFilter.NoFilter,
+        sortField: TransactionSortField.Date,
+        sortDirection: TransactionSortDirection.Desc,
+        page,
+      })
     ),
     Markup.button.callback(
       formatMoney({ amount: row.income, currency: bankAccount.currency }),
-      `${type}:${bankAccount.id}:${row.groupyear}:${row.groupnumber}:${UserTransactionListFilter.OnlyIncome}:${page}`
+      generateTransactionListLink({
+        type,
+        bankAccountId: bankAccount.id,
+        groupYear: row.groupyear,
+        groupNumber: row.groupnumber,
+        filter: UserTransactionListFilter.OnlyIncome,
+        sortField: TransactionSortField.Date,
+        sortDirection: TransactionSortDirection.Desc,
+        page,
+      })
     ),
     Markup.button.callback(
       formatMoney({ amount: row.outcome, currency: bankAccount.currency }),
-      `${type}:${bankAccount.id}:${row.groupyear}:${row.groupnumber}:${UserTransactionListFilter.OnlyOutcome}:${page}`
+      generateTransactionListLink({
+        type,
+        bankAccountId: bankAccount.id,
+        groupYear: row.groupyear,
+        groupNumber: row.groupnumber,
+        filter: UserTransactionListFilter.OnlyOutcome,
+        sortField: TransactionSortField.Date,
+        sortDirection: TransactionSortDirection.Desc,
+        page,
+      })
     ),
   ];
 };

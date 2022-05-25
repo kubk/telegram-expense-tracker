@@ -69,7 +69,10 @@ bot.action(
   new RegExp(`${BotButtons.StatisticWeeksButton}:(.+)`),
   statsWeekHandler
 );
-bot.action(/([wm]):(.+):(\d{4}):(\d+):(.+):(.+)/, transactionListHandler);
+bot.action(
+  /([wm]):(.+):(\d{4}):(\d+):(.+):(.+):(.+):(.+)/,
+  transactionListHandler
+);
 bot.action(
   new RegExp(`${BotButtons.TransactionAddManualButton}:(.+)`),
   transactionAddManualSelectTypeHandler

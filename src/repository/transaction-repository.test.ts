@@ -2,7 +2,8 @@ import { fixtures, useRefreshDb } from '../fixtures/use-refresh-db';
 import { transactionRepository } from '../container';
 import {
   StatisticGroupByType,
-  UserTransactionExpenseRowItem,
+  TransactionSortDirection,
+  TransactionSortField,
   UserTransactionListFilter,
 } from './transaction-repository';
 import { DateTime } from 'luxon';
@@ -21,6 +22,8 @@ test('transaction list for user and ba', async () => {
       transactionType: UserTransactionListFilter.NoFilter,
       dateFrom: DateTime.now().startOf('year').toJSDate(),
       dateTo: DateTime.now().endOf('year').toJSDate(),
+      sortDirection: TransactionSortDirection.Desc,
+      sortField: TransactionSortField.Date,
     },
   });
   expect(firstResult.items).toHaveLength(3);
@@ -36,6 +39,8 @@ test('transaction list for user and ba', async () => {
       transactionType: UserTransactionListFilter.NoFilter,
       dateFrom: DateTime.now().startOf('year').toJSDate(),
       dateTo: DateTime.now().endOf('year').toJSDate(),
+      sortDirection: TransactionSortDirection.Desc,
+      sortField: TransactionSortField.Date,
     },
   });
   expect(secondResult.items).toHaveLength(3);
@@ -51,6 +56,8 @@ test('transaction list for user and ba', async () => {
       transactionType: UserTransactionListFilter.NoFilter,
       dateFrom: DateTime.now().startOf('year').toJSDate(),
       dateTo: DateTime.now().endOf('year').toJSDate(),
+      sortDirection: TransactionSortDirection.Desc,
+      sortField: TransactionSortField.Date,
     },
   });
   expect(thirdResult.items).toHaveLength(4);
@@ -66,6 +73,8 @@ test('transaction list for user and ba', async () => {
       transactionType: UserTransactionListFilter.OnlyOutcome,
       dateFrom: DateTime.now().startOf('year').toJSDate(),
       dateTo: DateTime.now().endOf('year').toJSDate(),
+      sortDirection: TransactionSortDirection.Desc,
+      sortField: TransactionSortField.Date,
     },
   });
   expect(onlyOutcomeResult.items).toHaveLength(2);
@@ -81,6 +90,8 @@ test('transaction list for user and ba', async () => {
       transactionType: UserTransactionListFilter.OnlyIncome,
       dateFrom: DateTime.now().startOf('year').toJSDate(),
       dateTo: DateTime.now().endOf('year').toJSDate(),
+      sortDirection: TransactionSortDirection.Desc,
+      sortField: TransactionSortField.Date,
     },
   });
   expect(onlyIncomeResult.items).toHaveLength(2);
@@ -98,6 +109,8 @@ test('transactions pagination', async () => {
       transactionType: UserTransactionListFilter.NoFilter,
       dateFrom: DateTime.now().startOf('year').toJSDate(),
       dateTo: DateTime.now().endOf('year').toJSDate(),
+      sortDirection: TransactionSortDirection.Desc,
+      sortField: TransactionSortField.Date,
     },
   });
   expect(firstPageResult.currentPage).toBe(1);
@@ -118,6 +131,8 @@ test('transactions pagination', async () => {
       transactionType: UserTransactionListFilter.NoFilter,
       dateFrom: DateTime.now().startOf('year').toJSDate(),
       dateTo: DateTime.now().endOf('year').toJSDate(),
+      sortDirection: TransactionSortDirection.Desc,
+      sortField: TransactionSortField.Date,
     },
   });
   expect(secondPageResult.currentPage).toBe(2);
@@ -294,6 +309,8 @@ test('create manual transaction', async () => {
         transactionType: UserTransactionListFilter.NoFilter,
         dateFrom: DateTime.now().startOf('year').toJSDate(),
         dateTo: DateTime.now().endOf('year').toJSDate(),
+        sortDirection: TransactionSortDirection.Desc,
+        sortField: TransactionSortField.Date,
       },
     }
   );
@@ -316,6 +333,8 @@ test('create manual transaction', async () => {
       transactionType: UserTransactionListFilter.NoFilter,
       dateFrom: DateTime.now().startOf('year').toJSDate(),
       dateTo: DateTime.now().endOf('year').toJSDate(),
+      sortDirection: TransactionSortDirection.Desc,
+      sortField: TransactionSortField.Date,
     },
   });
 

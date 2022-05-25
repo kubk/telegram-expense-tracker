@@ -3,6 +3,8 @@ import { isNumber } from '../../lib/validaton/is-number';
 import { isValidEnumValue } from '../../lib/typescript/is-valid-enum-value';
 import {
   StatisticGroupByType,
+  TransactionSortDirection,
+  TransactionSortField,
   UserTransactionListFilter,
 } from '../../repository/transaction-repository';
 import {
@@ -40,6 +42,8 @@ export const transactionListHandler = async (ctx: Context) => {
     year,
     groupNumber,
     transactionType,
+    sortField,
+    sortDirection,
     pageString,
   ] = (ctx as any).match;
   const page = parseInt(pageString);
@@ -48,7 +52,9 @@ export const transactionListHandler = async (ctx: Context) => {
     !bankAccountId ||
     !isNumber(page) ||
     !isValidEnumValue(transactionType, UserTransactionListFilter) ||
-    !isValidEnumValue(statisticsType, StatisticGroupByType)
+    !isValidEnumValue(statisticsType, StatisticGroupByType) ||
+    !isValidEnumValue(sortField, TransactionSortField) ||
+    !isValidEnumValue(sortDirection, TransactionSortDirection)
   ) {
     return;
   }
@@ -66,6 +72,8 @@ export const transactionListHandler = async (ctx: Context) => {
       dateFrom: dateFilter.from,
       dateTo: dateFilter.to,
       transactionType: transactionType,
+      sortDirection,
+      sortField,
     },
     pagination: {
       perPage: user.telegramProfile.perPage,
@@ -81,6 +89,8 @@ export const transactionListHandler = async (ctx: Context) => {
       transactionsPaginated: result,
       type: statisticsType,
       filter: transactionType,
+      sortDirection,
+      sortField,
       bankAccount: bankAccount,
       groupYear: parseInt(year),
       groupNumber: parseInt(groupNumber),

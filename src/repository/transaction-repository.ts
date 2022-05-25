@@ -38,6 +38,16 @@ export enum StatisticGroupByType {
   Week = 'w',
 }
 
+export enum TransactionSortDirection {
+  Asc = 'a',
+  Desc = 'd',
+}
+
+export enum TransactionSortField {
+  Date = 'd',
+  Amount = 'a',
+}
+
 export class TransactionRepository {
   async getUserTransactionsExpensesGrouped(options: {
     userId: string;
@@ -139,18 +149,20 @@ export class TransactionRepository {
       dateFrom: Date;
       dateTo: Date;
       transactionType: UserTransactionListFilter;
+      sortDirection: TransactionSortDirection;
+      sortField: TransactionSortField;
     };
   }) {
     const {
       userId,
       bankAccountId,
       pagination,
-      filter: { dateFrom, dateTo, transactionType },
+      filter: { dateFrom, dateTo, transactionType, sortDirection, sortField },
     } = options;
     const { page } = pagination;
     const { offset, perPage } = calcPaginationOffset(pagination);
 
-    const transactionTypeFilter = (() => {
+    const filterTypeSql = (() => {
       switch (transactionType) {
         case UserTransactionListFilter.NoFilter:
           return Prisma.empty;
@@ -163,6 +175,28 @@ export class TransactionRepository {
       }
     })();
 
+    const sortFieldSql = (() => {
+      switch (sortField) {
+        case TransactionSortField.Amount:
+          return Prisma.sql`t."amount"`;
+        case TransactionSortField.Date:
+          return Prisma.sql`t."createdAt"`;
+        default:
+          throw new UnreachableCaseError(sortField);
+      }
+    })();
+
+    const sortDirectionSql = (() => {
+      switch (sortDirection) {
+        case TransactionSortDirection.Asc:
+          return Prisma.sql`asc`;
+        case TransactionSortDirection.Desc:
+          return Prisma.sql`desc`;
+        default:
+          throw new UnreachableCaseError(sortDirection);
+      }
+    })();
+
     const [countResult, dataResult] = await Promise.all([
       prisma.$queryRaw<Array<{ count: number }>>`
         select count(t.id) as count
@@ -172,7 +206,7 @@ export class TransactionRepository {
           left join "BankAccount" ba on "Family".id = ba."familyId"
           left join "Transaction" t on ba.id = t."bankAccountId"
         where u.id = ${userId}
-          and ba.id = ${bankAccountId} ${transactionTypeFilter}
+          and ba.id = ${bankAccountId} ${filterTypeSql}
           and t."createdAt" between ${dateFrom}
           and ${dateTo}
       `,
@@ -183,10 +217,10 @@ export class TransactionRepository {
                left join "BankAccount" ba on "Family".id = ba."familyId"
                left join "Transaction" t on ba.id = t."bankAccountId"
         where u.id = ${userId}
-          and ba.id = ${bankAccountId} ${transactionTypeFilter}
+          and ba.id = ${bankAccountId} ${filterTypeSql}
           and t."createdAt" between ${dateFrom}
           and ${dateTo}
-        order by t."createdAt" desc
+        order by ${sortFieldSql} ${sortDirectionSql}
         offset ${offset} limit ${perPage}
       `,
     ]);
