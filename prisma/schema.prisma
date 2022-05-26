@@ -48,12 +48,14 @@ model BankAccount {
   currency     Currency
   name         String
   familyId     String
+  shortId      Int           @default(autoincrement())
   family       Family        @relation(fields: [familyId], references: [id])
   transactions Transaction[]
 }
 
 model Transaction {
   id            String            @id @default(uuid())
+  shortId       Int               @default(autoincrement())
   createdAt     DateTime
   source        TransactionSource @default(IMPORTED)
   isCountable   Boolean           @default(true)

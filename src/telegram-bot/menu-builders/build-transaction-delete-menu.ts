@@ -11,7 +11,7 @@ export const buildTransactionDeleteMenu = (transaction: Transaction) => {
       ),
       Markup.button.callback(
         `Cancel`,
-        `${BotCallbackQuery.TransactionSelect}:${transaction.id}`
+        `${BotButtons.BankAccountListButtonWithRemove}`
       ),
     ],
   ];

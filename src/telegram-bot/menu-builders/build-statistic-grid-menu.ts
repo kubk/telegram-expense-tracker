@@ -5,7 +5,7 @@ import {
   UserTransactionExpenseRowItem,
   UserTransactionListFilter,
 } from '../../repository/transaction-repository';
-import { Currency } from '@prisma/client';
+import { BankAccount } from '@prisma/client';
 import { Markup } from 'telegraf';
 import { formatMoney } from '../format-money';
 import { generateTransactionListLink } from './generate-transaction-list-link';
@@ -13,7 +13,7 @@ import { generateTransactionListLink } from './generate-transaction-list-link';
 export const buildStatisticGridMenu = (
   row: UserTransactionExpenseRowItem,
   type: StatisticGroupByType,
-  bankAccount: { id: string; currency: Currency },
+  bankAccount: Pick<BankAccount, 'currency' | 'shortId'>,
   page: number
 ) => {
   const money = formatMoney({
@@ -26,7 +26,7 @@ export const buildStatisticGridMenu = (
       `${row.groupname} ${money}`,
       generateTransactionListLink({
         type,
-        bankAccountId: bankAccount.id,
+        bankAccountShortId: bankAccount.shortId,
         groupYear: row.groupyear,
         groupNumber: row.groupnumber,
         filter: UserTransactionListFilter.NoFilter,
@@ -39,7 +39,7 @@ export const buildStatisticGridMenu = (
       formatMoney({ amount: row.income, currency: bankAccount.currency }),
       generateTransactionListLink({
         type,
-        bankAccountId: bankAccount.id,
+        bankAccountShortId: bankAccount.shortId,
         groupYear: row.groupyear,
         groupNumber: row.groupnumber,
         filter: UserTransactionListFilter.OnlyIncome,
@@ -52,7 +52,7 @@ export const buildStatisticGridMenu = (
       formatMoney({ amount: row.outcome, currency: bankAccount.currency }),
       generateTransactionListLink({
         type,
-        bankAccountId: bankAccount.id,
+        bankAccountShortId: bankAccount.shortId,
         groupYear: row.groupyear,
         groupNumber: row.groupnumber,
         filter: UserTransactionListFilter.OnlyOutcome,

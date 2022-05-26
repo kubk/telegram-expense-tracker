@@ -13,7 +13,7 @@ testIf(
     const path = '/Users/egor/Downloads/2022-april.pdf';
     const dataBuffer = readFileSync(path);
     const result = await parseTransactions(dataBuffer);
-    const bankAccountId = fixtures.bankAccounts.user_1_ba_usd;
+    const bankAccountId = fixtures.bankAccounts.user_1_ba_usd.uuid;
 
     const importTransactions = () => {
       return transactionRepository.importTransactions(

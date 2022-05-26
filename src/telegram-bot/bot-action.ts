@@ -13,9 +13,9 @@ export enum BotButtons {
 
 export enum BotCallbackQuery {
   SelectBankAccount = 'select_bank_account',
-  TransactionSelect = 'select_transaction',
-  TransactionTypeToggle = 'transaction_type_toggle',
-  TransactionIsCountableToggle = 'transaction_is_count',
+  TransactionSelect = 's',
+  TransactionTypeToggle = 'ttt',
+  TransactionIsCountableToggle = 'tic',
   TransactionDeleteAsk = 'transaction_del_ask',
   TransactionDeleteDo = 'transaction_del_do',
   TransactionAddManualAmount = 'transaction_manual',

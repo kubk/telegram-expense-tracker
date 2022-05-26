@@ -23,7 +23,7 @@ export const buildWeekStatisticsMenu = (
     [
       Markup.button.callback(
         '◀️ Back',
-        `${BotCallbackQuery.SelectBankAccount}:${bankAccount.id}`
+        `${BotCallbackQuery.SelectBankAccount}:${bankAccount.shortId}`
       ),
     ],
   ];

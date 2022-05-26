@@ -14,7 +14,7 @@ export const buildBankAccountListMenu = (bankAccounts: BankAccount[]) => {
     ...bankAccounts.map((bankAccount) => [
       Markup.button.callback(
         `${bankAccount.name} (${currencyToSymbol(bankAccount.currency)})`,
-        `${BotCallbackQuery.SelectBankAccount}:${bankAccount.id}`
+        `${BotCallbackQuery.SelectBankAccount}:${bankAccount.shortId}`
       ),
     ]),
   ];

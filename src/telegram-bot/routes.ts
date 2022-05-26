@@ -11,14 +11,15 @@ import { transactionListHandler } from './command-handlers/transaction-list-hand
 import { transactionAddManualSelectTypeHandler } from './command-handlers/transaction-add-manual-select-type-handler';
 import { textHandler } from './command-handlers/text-handler';
 import { transactionSelectHandler } from './command-handlers/transaction-select-handler';
-import { transactionIsCountableToggleCommand } from './command-handlers/transaction-is-countable-toggle-command';
 import { transactionDeleteAskHandler } from './command-handlers/transaction-delete-ask-handler';
 import { transactionDeleteDoHandler } from './command-handlers/transaction-delete-do-handler';
 import { transactionAddManualSelectAmountHandler } from './command-handlers/transaction-add-manual-select-amount-handler';
 import { bankStatementUploadedHandler } from './command-handlers/bank-statement-uploaded-handler';
 import { goToUploadBankStatementHandler } from './command-handlers/go-to-upload-bank-statement-handler';
-import { transactionTypeToggleCommand } from './command-handlers/transaction-type-toggle-command';
-import { TransactionType } from '../repository/transaction-repository';
+import {
+  StatisticGroupByType,
+  TransactionType,
+} from '../repository/transaction-repository';
 
 bot.command('start', startHandler);
 bot.command('cancel', cancelHandler);
@@ -36,16 +37,10 @@ bot.action(
   selectBankAccountHandler
 );
 bot.action(
-  new RegExp(`${BotCallbackQuery.TransactionSelect}:(.+)`),
+  new RegExp(
+    `${BotCallbackQuery.TransactionSelect}:(.+):([${StatisticGroupByType.Week}${StatisticGroupByType.Month}]):(.+):(\\d{4}):(\\d+):(.+):(.+):(.+):(\\d+):?(.*)`
+  ),
   transactionSelectHandler
-);
-bot.action(
-  new RegExp(`${BotCallbackQuery.TransactionIsCountableToggle}:(.+)`),
-  transactionIsCountableToggleCommand
-);
-bot.action(
-  new RegExp(`${BotCallbackQuery.TransactionTypeToggle}:(.+)`),
-  transactionTypeToggleCommand
 );
 bot.action(
   new RegExp(`${BotCallbackQuery.TransactionDeleteAsk}:(.+)`),
@@ -70,7 +65,9 @@ bot.action(
   statsWeekHandler
 );
 bot.action(
-  /([wm]):(.+):(\d{4}):(\d+):(.+):(.+):(.+):(.+)/,
+  new RegExp(
+    `([${StatisticGroupByType.Week}${StatisticGroupByType.Month}]):(.+):(\\d{4}):(\\d+):(.+):(.+):(.+):(.+)`
+  ),
   transactionListHandler
 );
 bot.action(

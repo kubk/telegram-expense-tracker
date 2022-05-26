@@ -2,14 +2,14 @@ import {
   StatisticGroupByType,
   UserTransactionExpenseRowItem,
 } from '../../repository/transaction-repository';
-import { Currency } from '@prisma/client';
+import { BankAccount, Currency } from '@prisma/client';
 import { buildStatisticGridMenu } from './build-statistic-grid-menu';
 import { Markup } from 'telegraf';
 import { BotCallbackQuery } from '../bot-action';
 
 export const buildMonthStatisticsMenu = (
   statisticRows: UserTransactionExpenseRowItem[],
-  bankAccount: { id: string; currency: Currency }
+  bankAccount: Pick<BankAccount, 'shortId' | 'currency'>
 ) => {
   return [
     ...statisticRows.map((row) => {
@@ -23,7 +23,7 @@ export const buildMonthStatisticsMenu = (
     [
       Markup.button.callback(
         '◀️ Back',
-        `${BotCallbackQuery.SelectBankAccount}:${bankAccount.id}`
+        `${BotCallbackQuery.SelectBankAccount}:${bankAccount.shortId}`
       ),
     ],
   ];

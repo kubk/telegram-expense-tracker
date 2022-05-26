@@ -38,7 +38,7 @@ export const transactionListHandler = async (ctx: Context) => {
   const [
     ,
     statisticsType,
-    bankAccountId,
+    bankAccountShortIdString,
     year,
     groupNumber,
     transactionType,
@@ -49,7 +49,7 @@ export const transactionListHandler = async (ctx: Context) => {
   const page = parseInt(pageString);
 
   if (
-    !bankAccountId ||
+    !bankAccountShortIdString ||
     !isNumber(page) ||
     !isValidEnumValue(transactionType, UserTransactionListFilter) ||
     !isValidEnumValue(statisticsType, StatisticGroupByType) ||
@@ -65,9 +65,10 @@ export const transactionListHandler = async (ctx: Context) => {
     ctx.callbackQuery.from.id
   );
 
+  const bankAccountShortId = parseInt(bankAccountShortIdString);
   const result = await transactionRepository.getUserTransactionList({
     userId: user.id,
-    bankAccountId: bankAccountId,
+    bankAccountShortId: bankAccountShortId,
     filter: {
       dateFrom: dateFilter.from,
       dateTo: dateFilter.to,
@@ -81,7 +82,9 @@ export const transactionListHandler = async (ctx: Context) => {
     },
   });
 
-  const bankAccount = await bankRepository.getBankAccountById(bankAccountId);
+  const bankAccount = await bankRepository.getBankAccountByShortId(
+    bankAccountShortId
+  );
   assert(bankAccount);
 
   await ctx.editMessageReplyMarkup({

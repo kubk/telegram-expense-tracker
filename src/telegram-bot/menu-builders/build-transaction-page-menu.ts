@@ -1,6 +1,6 @@
 import { Transaction } from '@prisma/client';
 import { Markup } from 'telegraf';
-import { BotButtons, BotCallbackQuery, humanizeButton } from '../bot-action';
+import { BotCallbackQuery } from '../bot-action';
 
 const getOppositeTransactionType = (transaction: Transaction) => {
   if (transaction.amount > 0) {
@@ -12,18 +12,33 @@ const getOppositeTransactionType = (transaction: Transaction) => {
   throw new Error('Unable to get opposite transaction for 0 amount');
 };
 
-export const buildTransactionPageMenu = (transaction: Transaction) => {
+export const buildTransactionPageMenu = (options: {
+  transaction: Transaction;
+  currentPageLink: string;
+  action: string;
+  backLink: string;
+}) => {
+  const { transaction, currentPageLink, action, backLink } = options;
+
+  const changeIsCountableLink = `${
+    action ? currentPageLink.replace(`:${action}`, '') : currentPageLink
+  }:${BotCallbackQuery.TransactionIsCountableToggle}`;
+
+  const changeTypeLink = `${
+    action ? currentPageLink.replace(`:${action}`, '') : currentPageLink
+  }:${BotCallbackQuery.TransactionTypeToggle}`;
+
   return [
     [
       Markup.button.callback(
         `Is countable - ${transaction.isCountable ? 'Yes 💶' : 'No 👻'}`,
-        `${BotCallbackQuery.TransactionIsCountableToggle}:${transaction.id}`
+        changeIsCountableLink
       ),
     ],
     [
       Markup.button.callback(
         `Change transaction type to ${getOppositeTransactionType(transaction)}`,
-        `${BotCallbackQuery.TransactionTypeToggle}:${transaction.id}`
+        changeTypeLink
       ),
     ],
     [
@@ -32,11 +47,6 @@ export const buildTransactionPageMenu = (transaction: Transaction) => {
         `${BotCallbackQuery.TransactionDeleteAsk}:${transaction.id}`
       ),
     ],
-    [
-      Markup.button.callback(
-        humanizeButton(BotButtons.BankAccountListButtonWithRemove),
-        BotButtons.BankAccountListButtonWithRemove
-      ),
-    ],
+    [Markup.button.callback('Back', backLink)],
   ];
 };

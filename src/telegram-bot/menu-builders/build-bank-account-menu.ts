@@ -1,30 +1,30 @@
 import { Markup } from 'telegraf';
 import { BotButtons, humanizeButton } from '../bot-action';
 
-export const buildBankAccountMenu = (bankAccountId: string) => {
+export const buildBankAccountMenu = (bankAccountShortId: number) => {
   return [
     [
       Markup.button.callback(
         humanizeButton(BotButtons.StatisticMonthsButton),
-        `${BotButtons.StatisticMonthsButton}:${bankAccountId}`
+        `${BotButtons.StatisticMonthsButton}:${bankAccountShortId}`
       ),
     ],
     [
       Markup.button.callback(
         humanizeButton(BotButtons.StatisticWeeksButton),
-        `${BotButtons.StatisticWeeksButton}:${bankAccountId}`
+        `${BotButtons.StatisticWeeksButton}:${bankAccountShortId}`
       ),
     ],
     [
       Markup.button.callback(
         humanizeButton(BotButtons.UploadBankStatementButton),
-        `${BotButtons.UploadBankStatementButton}:${bankAccountId}`
+        `${BotButtons.UploadBankStatementButton}:${bankAccountShortId}`
       ),
     ],
     [
       Markup.button.callback(
         humanizeButton(BotButtons.TransactionAddManualButton),
-        `${BotButtons.TransactionAddManualButton}:${bankAccountId}`
+        `${BotButtons.TransactionAddManualButton}:${bankAccountShortId}`
       ),
     ],
     [Markup.button.callback('◀️ Back', BotButtons.BankAccountListButton)],

@@ -9,21 +9,24 @@ import { StatisticGroupByType } from '../../repository/transaction-repository';
 import { buildWeekStatisticsMenu } from '../menu-builders/build-week-statistics-menu';
 
 export const statsWeekHandler = async (ctx: Context) => {
-  const bankAccountId = (ctx as any).match[1];
-  if (!bankAccountId) {
+  const bankAccountShortIdString = (ctx as any).match[1];
+  if (!bankAccountShortIdString) {
     return;
   }
-
-  const bankAccount = await bankRepository.getBankAccountById(bankAccountId);
+  const bankAccountId = parseInt(bankAccountShortIdString);
+  const bankAccount = await bankRepository.getBankAccountByShortId(
+    bankAccountId
+  );
   assert(bankAccount);
   assert(ctx.callbackQuery);
   const user = await userRepository.getUserByTelegramIdOrThrow(
     ctx.callbackQuery.from.id
   );
+
   const transactions =
     await transactionRepository.getUserTransactionsExpensesGrouped({
       userId: user.id,
-      bankAccountId: bankAccountId,
+      bankAccountId: bankAccount.id,
       type: StatisticGroupByType.Week,
     });
 

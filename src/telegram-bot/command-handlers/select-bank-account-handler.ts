@@ -4,13 +4,12 @@ import { assert } from 'ts-essentials';
 import { buildBankAccountMenu } from '../menu-builders/build-bank-account-menu';
 
 export const selectBankAccountHandler = async (ctx: Context) => {
-  const bankAccountId = (ctx as any).match[1];
-  if (!bankAccountId) {
+  const bankAccountShortIdString = (ctx as any).match[1];
+  if (!bankAccountShortIdString) {
     return;
   }
-  const bankAccount = await bankRepository.getBankAccountById(bankAccountId);
-  assert(bankAccount);
+  const bankAccountShortId = parseInt(bankAccountShortIdString);
   await ctx.editMessageReplyMarkup({
-    inline_keyboard: buildBankAccountMenu(bankAccount.id),
+    inline_keyboard: buildBankAccountMenu(bankAccountShortId),
   });
 };

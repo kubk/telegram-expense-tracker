@@ -1,4 +1,4 @@
-import { Currency, Transaction, TransactionSource } from '@prisma/client';
+import { BankAccount, Transaction, TransactionSource } from '@prisma/client';
 import { Markup } from 'telegraf';
 import { BotButtons, BotCallbackQuery } from '../bot-action';
 import {
@@ -82,7 +82,7 @@ const getOppositeDirection = (direction: TransactionSortDirection) => {
 export const buildTransactionPaginatedResult = (options: {
   transactionsPaginated: PaginatedResult<Transaction>;
   type: StatisticGroupByType;
-  bankAccount: { id: string; currency: Currency };
+  bankAccount: Pick<BankAccount, 'id' | 'shortId' | 'currency'>;
   groupYear: number;
   groupNumber: number;
   filter: UserTransactionListFilter;
@@ -102,6 +102,7 @@ export const buildTransactionPaginatedResult = (options: {
 
   const backButtonInlineQuery = getBackButtonInlineQuery(type);
   const backButtonTitle = getBackButtonTitle(type);
+  const bankAccountIdShortened = bankAccount.shortId;
 
   const sortButtons = [
     {
@@ -122,7 +123,7 @@ export const buildTransactionPaginatedResult = (options: {
         `${text} ${sortField === field ? getSortIcon(sortDirection) : ''}️`,
         generateTransactionListLink({
           type,
-          bankAccountId: bankAccount.id,
+          bankAccountShortId: bankAccountIdShortened,
           groupYear,
           groupNumber,
           filter,
@@ -147,7 +148,18 @@ export const buildTransactionPaginatedResult = (options: {
       return [
         Markup.button.callback(
           `${money}  ${icon} ${isCountable}  ${title}`,
-          `${BotCallbackQuery.TransactionSelect}:${transaction.id}`
+          `${BotCallbackQuery.TransactionSelect}:${
+            transaction.shortId
+          }:${generateTransactionListLink({
+            type,
+            bankAccountShortId: bankAccountIdShortened,
+            groupYear,
+            groupNumber,
+            filter,
+            sortField,
+            sortDirection,
+            page: transactionsPaginated.currentPage,
+          })}`
         ),
       ];
     }),
@@ -157,7 +169,7 @@ export const buildTransactionPaginatedResult = (options: {
             `← Page ${transactionsPaginated.previousPage} / ${transactionsPaginated.totalPages}`,
             generateTransactionListLink({
               type,
-              bankAccountId: bankAccount.id,
+              bankAccountShortId: bankAccountIdShortened,
               groupYear,
               groupNumber,
               filter,
@@ -172,7 +184,7 @@ export const buildTransactionPaginatedResult = (options: {
             `Page ${transactionsPaginated.nextPage} / ${transactionsPaginated.totalPages} →`,
             generateTransactionListLink({
               type,
-              bankAccountId: bankAccount.id,
+              bankAccountShortId: bankAccountIdShortened,
               groupYear,
               groupNumber,
               filter,
@@ -186,7 +198,7 @@ export const buildTransactionPaginatedResult = (options: {
     [
       Markup.button.callback(
         backButtonTitle,
-        `${backButtonInlineQuery}:${bankAccount.id}`
+        `${backButtonInlineQuery}:${bankAccount.shortId}`
       ),
     ],
   ];

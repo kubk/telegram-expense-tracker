@@ -12,8 +12,8 @@ useRefreshDb();
 
 test('transaction list for user and ba', async () => {
   const firstResult = await transactionRepository.getUserTransactionList({
-    userId: fixtures.users.user_1,
-    bankAccountId: fixtures.bankAccounts.user_1_ba_try,
+    userId: fixtures.users.user_1.uuid,
+    bankAccountShortId: fixtures.bankAccounts.user_1_ba_try.short,
     pagination: {
       page: 1,
       perPage: 10,
@@ -29,8 +29,8 @@ test('transaction list for user and ba', async () => {
   expect(firstResult.items).toHaveLength(3);
 
   const secondResult = await transactionRepository.getUserTransactionList({
-    userId: fixtures.users.user_2,
-    bankAccountId: fixtures.bankAccounts.user_1_ba_try,
+    userId: fixtures.users.user_2.uuid,
+    bankAccountShortId: fixtures.bankAccounts.user_1_ba_try.short,
     pagination: {
       page: 1,
       perPage: 10,
@@ -46,8 +46,8 @@ test('transaction list for user and ba', async () => {
   expect(secondResult.items).toHaveLength(3);
 
   const thirdResult = await transactionRepository.getUserTransactionList({
-    userId: fixtures.users.user_1,
-    bankAccountId: fixtures.bankAccounts.user_1_ba_usd,
+    userId: fixtures.users.user_1.uuid,
+    bankAccountShortId: fixtures.bankAccounts.user_1_ba_usd.short,
     pagination: {
       page: 1,
       perPage: 10,
@@ -63,8 +63,8 @@ test('transaction list for user and ba', async () => {
   expect(thirdResult.items).toHaveLength(4);
 
   const onlyOutcomeResult = await transactionRepository.getUserTransactionList({
-    userId: fixtures.users.user_2,
-    bankAccountId: fixtures.bankAccounts.user_1_ba_usd,
+    userId: fixtures.users.user_2.uuid,
+    bankAccountShortId: fixtures.bankAccounts.user_1_ba_usd.short,
     pagination: {
       page: 1,
       perPage: 10,
@@ -80,8 +80,8 @@ test('transaction list for user and ba', async () => {
   expect(onlyOutcomeResult.items).toHaveLength(2);
 
   const onlyIncomeResult = await transactionRepository.getUserTransactionList({
-    userId: fixtures.users.user_2,
-    bankAccountId: fixtures.bankAccounts.user_1_ba_usd,
+    userId: fixtures.users.user_2.uuid,
+    bankAccountShortId: fixtures.bankAccounts.user_1_ba_usd.short,
     pagination: {
       page: 1,
       perPage: 10,
@@ -99,8 +99,8 @@ test('transaction list for user and ba', async () => {
 
 test('transactions pagination', async () => {
   const firstPageResult = await transactionRepository.getUserTransactionList({
-    userId: fixtures.users.user_1,
-    bankAccountId: fixtures.bankAccounts.user_1_ba_usd,
+    userId: fixtures.users.user_1.uuid,
+    bankAccountShortId: fixtures.bankAccounts.user_1_ba_usd.short,
     pagination: {
       page: 1,
       perPage: 2,
@@ -121,8 +121,8 @@ test('transactions pagination', async () => {
   expect(firstPageResult.totalPages).toBe(2);
 
   const secondPageResult = await transactionRepository.getUserTransactionList({
-    userId: fixtures.users.user_1,
-    bankAccountId: fixtures.bankAccounts.user_1_ba_usd,
+    userId: fixtures.users.user_1.uuid,
+    bankAccountShortId: fixtures.bankAccounts.user_1_ba_usd.short,
     pagination: {
       page: 2,
       perPage: 2,
@@ -167,16 +167,16 @@ test('transaction monthly starts - TRY bank account', async () => {
 
   expect(
     await transactionRepository.getUserTransactionsExpensesGrouped({
-      userId: fixtures.users.user_1,
-      bankAccountId: fixtures.bankAccounts.user_1_ba_try,
+      userId: fixtures.users.user_1.uuid,
+      bankAccountId: fixtures.bankAccounts.user_1_ba_try.uuid,
       type: StatisticGroupByType.Month,
     })
   ).toStrictEqual(expectedTryBankAccountStats);
 
   expect(
     await transactionRepository.getUserTransactionsExpensesGrouped({
-      userId: fixtures.users.user_2,
-      bankAccountId: fixtures.bankAccounts.user_1_ba_try,
+      userId: fixtures.users.user_2.uuid,
+      bankAccountId: fixtures.bankAccounts.user_1_ba_try.uuid,
       type: StatisticGroupByType.Month,
     })
   ).toStrictEqual(expectedTryBankAccountStats);
@@ -242,16 +242,16 @@ test('transaction weekly starts - USD bank account', async () => {
 
   expect(
     await transactionRepository.getUserTransactionsExpensesGrouped({
-      userId: fixtures.users.user_1,
-      bankAccountId: fixtures.bankAccounts.user_1_ba_usd,
+      userId: fixtures.users.user_1.uuid,
+      bankAccountId: fixtures.bankAccounts.user_1_ba_usd.uuid,
       type: StatisticGroupByType.Week,
     })
   ).toStrictEqual(expectedTryBankAccountStats);
 
   expect(
     await transactionRepository.getUserTransactionsExpensesGrouped({
-      userId: fixtures.users.user_2,
-      bankAccountId: fixtures.bankAccounts.user_1_ba_usd,
+      userId: fixtures.users.user_2.uuid,
+      bankAccountId: fixtures.bankAccounts.user_1_ba_usd.uuid,
       type: StatisticGroupByType.Week,
     })
   ).toStrictEqual(expectedTryBankAccountStats);
@@ -281,16 +281,16 @@ test('transaction monthly stats - USD bank account', async () => {
 
   expect(
     await transactionRepository.getUserTransactionsExpensesGrouped({
-      userId: fixtures.users.user_1,
-      bankAccountId: fixtures.bankAccounts.user_1_ba_usd,
+      userId: fixtures.users.user_1.uuid,
+      bankAccountId: fixtures.bankAccounts.user_1_ba_usd.uuid,
       type: StatisticGroupByType.Month,
     })
   ).toStrictEqual(expectedUsdBankAccountStats);
 
   expect(
     await transactionRepository.getUserTransactionsExpensesGrouped({
-      userId: fixtures.users.user_2,
-      bankAccountId: fixtures.bankAccounts.user_1_ba_usd,
+      userId: fixtures.users.user_2.uuid,
+      bankAccountId: fixtures.bankAccounts.user_1_ba_usd.uuid,
       type: StatisticGroupByType.Month,
     })
   ).toStrictEqual(expectedUsdBankAccountStats);
@@ -299,8 +299,8 @@ test('transaction monthly stats - USD bank account', async () => {
 test('create manual transaction', async () => {
   const transactionsBefore = await transactionRepository.getUserTransactionList(
     {
-      userId: fixtures.users.user_1,
-      bankAccountId: fixtures.bankAccounts.user_1_ba_try,
+      userId: fixtures.users.user_1.uuid,
+      bankAccountShortId: fixtures.bankAccounts.user_1_ba_try.short,
       pagination: {
         page: 1,
         perPage: 10,
@@ -316,15 +316,15 @@ test('create manual transaction', async () => {
   );
 
   await transactionRepository.createManualTransaction({
-    bankAccountId: fixtures.bankAccounts.user_1_ba_try,
+    bankAccountId: fixtures.bankAccounts.user_1_ba_try.uuid,
     title: 'Rent',
     currency: 'TRY',
     amount: 2700 * 1000,
   });
 
   const transactionsAfter = await transactionRepository.getUserTransactionList({
-    userId: fixtures.users.user_1,
-    bankAccountId: fixtures.bankAccounts.user_1_ba_try,
+    userId: fixtures.users.user_1.uuid,
+    bankAccountShortId: fixtures.bankAccounts.user_1_ba_try.short,
     pagination: {
       page: 1,
       perPage: 10,

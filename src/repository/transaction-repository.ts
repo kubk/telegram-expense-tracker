@@ -29,8 +29,8 @@ export enum TransactionType {
 
 export enum UserTransactionListFilter {
   OnlyIncome = 'in',
-  OnlyOutcome = 'out',
-  NoFilter = 'no',
+  OnlyOutcome = 'o',
+  NoFilter = 'n',
 }
 
 export enum StatisticGroupByType {
@@ -143,7 +143,7 @@ export class TransactionRepository {
 
   async getUserTransactionList(options: {
     userId: string;
-    bankAccountId: string;
+    bankAccountShortId: number;
     pagination: CalcPaginationParams;
     filter: {
       dateFrom: Date;
@@ -155,7 +155,7 @@ export class TransactionRepository {
   }) {
     const {
       userId,
-      bankAccountId,
+      bankAccountShortId,
       pagination,
       filter: { dateFrom, dateTo, transactionType, sortDirection, sortField },
     } = options;
@@ -206,7 +206,7 @@ export class TransactionRepository {
           left join "BankAccount" ba on "Family".id = ba."familyId"
           left join "Transaction" t on ba.id = t."bankAccountId"
         where u.id = ${userId}
-          and ba.id = ${bankAccountId} ${filterTypeSql}
+          and ba."shortId" = ${bankAccountShortId} ${filterTypeSql}
           and t."createdAt" between ${dateFrom}
           and ${dateTo}
       `,
@@ -217,7 +217,7 @@ export class TransactionRepository {
                left join "BankAccount" ba on "Family".id = ba."familyId"
                left join "Transaction" t on ba.id = t."bankAccountId"
         where u.id = ${userId}
-          and ba.id = ${bankAccountId} ${filterTypeSql}
+          and ba."shortId" = ${bankAccountShortId} ${filterTypeSql}
           and t."createdAt" between ${dateFrom}
           and ${dateTo}
         order by ${sortFieldSql} ${sortDirectionSql}
@@ -317,6 +317,14 @@ export class TransactionRepository {
     });
   }
 
+  async getTransactionByShortId(shortId: number) {
+    return prisma.transaction.findFirst({
+      where: {
+        shortId,
+      },
+    });
+  }
+
   deleteTransaction(transactionId: string) {
     return prisma.transaction.delete({
       where: {
@@ -325,22 +333,22 @@ export class TransactionRepository {
     });
   }
 
-  async toggleTransactionCountable(transactionId: string) {
-    const transaction = await this.getTransaction(transactionId);
+  async toggleTransactionCountable(transactionShortId: number) {
+    const transaction = await this.getTransactionByShortId(transactionShortId);
     assert(transaction);
 
     return prisma.transaction.update({
-      where: { id: transactionId },
+      where: { id: transaction.id },
       data: { isCountable: !transaction.isCountable },
     });
   }
 
-  async toggleTransactionType(transactionId: string) {
-    const transaction = await this.getTransaction(transactionId);
+  async toggleTransactionType(transactionShortId: number) {
+    const transaction = await this.getTransactionByShortId(transactionShortId);
     assert(transaction);
 
     return prisma.transaction.update({
-      where: { id: transactionId },
+      where: { id: transaction.id },
       data: { amount: -1 * transaction.amount },
     });
   }

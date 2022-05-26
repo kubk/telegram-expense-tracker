@@ -1,6 +1,5 @@
 import { prisma } from '../container';
 import { Currency, TransactionSource } from '@prisma/client';
-import { execPromise } from '../lib/node/exec-promise';
 import { DateTime } from 'luxon';
 import { getEnvSafe } from '../lib/env/env';
 
@@ -8,12 +7,18 @@ jest.setTimeout(10000);
 
 export const fixtures = {
   users: {
-    user_1: 'ac28d06d-9938-4f4c-a690-08115cf51d84',
-    user_2: '9a9f9a8d-093a-4901-a439-8abb31392d77',
+    user_1: { uuid: 'ac28d06d-9938-4f4c-a690-08115cf51d84', short: 1000 },
+    user_2: { uuid: '9a9f9a8d-093a-4901-a439-8abb31392d77', short: 1001 },
   },
   bankAccounts: {
-    user_1_ba_try: '449cce5f-04b3-489b-96a0-2aa8fb14bc8f',
-    user_1_ba_usd: '61637396-a7c2-4ccc-91b8-9098a62aee18',
+    user_1_ba_try: {
+      uuid: '449cce5f-04b3-489b-96a0-2aa8fb14bc8f',
+      short: 1002,
+    },
+    user_1_ba_usd: {
+      uuid: '61637396-a7c2-4ccc-91b8-9098a62aee18',
+      short: 1003,
+    },
   },
 };
 
@@ -48,7 +53,7 @@ $$ LANGUAGE plpgsql;
         users: {
           create: [
             {
-              id: fixtures.users.user_1,
+              id: fixtures.users.user_1.uuid,
               telegramProfile: {
                 create: {
                   telegramId: 1,
@@ -57,7 +62,7 @@ $$ LANGUAGE plpgsql;
               },
             },
             {
-              id: fixtures.users.user_2,
+              id: fixtures.users.user_2.uuid,
               telegramProfile: {
                 create: {
                   telegramId: 2,
@@ -70,7 +75,8 @@ $$ LANGUAGE plpgsql;
         bankAccounts: {
           create: [
             {
-              id: fixtures.bankAccounts.user_1_ba_try,
+              id: fixtures.bankAccounts.user_1_ba_try.uuid,
+              shortId: fixtures.bankAccounts.user_1_ba_try.short,
               currency: Currency.TRY,
               name: 'Yapi Kredi',
               transactions: {
@@ -102,7 +108,8 @@ $$ LANGUAGE plpgsql;
               },
             },
             {
-              id: fixtures.bankAccounts.user_1_ba_usd,
+              id: fixtures.bankAccounts.user_1_ba_usd.uuid,
+              shortId: fixtures.bankAccounts.user_1_ba_usd.short,
               currency: Currency.USD,
               name: 'Yapi Kredi',
               transactions: {

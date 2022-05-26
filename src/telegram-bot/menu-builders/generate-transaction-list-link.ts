@@ -7,7 +7,7 @@ import {
 
 export const generateTransactionListLink = (options: {
   type: StatisticGroupByType;
-  bankAccountId: string;
+  bankAccountShortId: number;
   groupYear: number;
   groupNumber: number;
   filter: UserTransactionListFilter;
@@ -17,7 +17,7 @@ export const generateTransactionListLink = (options: {
 }) => {
   return [
     options.type,
-    options.bankAccountId,
+    options.bankAccountShortId,
     options.groupYear,
     options.groupNumber,
     options.filter,

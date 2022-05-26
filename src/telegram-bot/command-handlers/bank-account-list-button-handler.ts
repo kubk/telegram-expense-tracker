@@ -4,7 +4,7 @@ import { Context, Markup } from 'telegraf';
 import { assert } from 'ts-essentials';
 
 export const bankAccountListButtonHandler = async (ctx: Context) => {
-  const [remove] = (ctx as any).match[1];
+  const [, remove] = (ctx as any).match;
   assert(ctx.callbackQuery);
   const user = await userRepository.getUserByTelegramIdOrThrow(
     ctx.callbackQuery.from.id

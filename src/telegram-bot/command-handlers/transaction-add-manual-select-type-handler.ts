@@ -21,12 +21,15 @@ const createTransactionTypeSelectMenu = () => {
 };
 
 export const transactionAddManualSelectTypeHandler = async (ctx: Context) => {
-  const bankAccountId = (ctx as any).match[1];
-  if (!bankAccountId) {
+  const bankAccountShortIdString = (ctx as any).match[1];
+  if (!bankAccountShortIdString) {
     return;
   }
 
-  const bankAccount = await bankRepository.getBankAccountById(bankAccountId);
+  const bankAccountId = parseInt(bankAccountShortIdString);
+  const bankAccount = await bankRepository.getBankAccountByShortId(
+    bankAccountId
+  );
   assert(bankAccount);
   assert(ctx.callbackQuery);
 
@@ -41,6 +44,6 @@ export const transactionAddManualSelectTypeHandler = async (ctx: Context) => {
 
   await userRepository.setUserState(user.telegramProfile.id, {
     type: 'addingTransactionType',
-    bankAccountId: bankAccountId,
+    bankAccountId: bankAccount.id,
   });
 };

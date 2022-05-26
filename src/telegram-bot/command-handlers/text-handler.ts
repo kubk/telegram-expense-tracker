@@ -115,7 +115,7 @@ export const textHandler = async (ctx: Context) => {
     await ctx.reply('Done!', Markup.removeKeyboard());
     await ctx.reply(
       `Hello 👋\nThis is a Telegram bot to track your expenses`,
-      Markup.inlineKeyboard(buildBankAccountMenu(bankAccount.id))
+      Markup.inlineKeyboard(buildBankAccountMenu(bankAccount.shortId))
     );
   }
 };

@@ -6,6 +6,8 @@ import { DateTime } from 'luxon';
 import { formatMoney } from '../format-money';
 import { Currency, Transaction } from '@prisma/client';
 import { getCurrencyAmountInUsd } from '../../currency-converter/get-currency-amount-in-usd';
+import { generateTransactionListLink } from '../menu-builders/generate-transaction-list-link';
+import { BotCallbackQuery } from '../bot-action';
 
 const formatAsUsd = async (transaction: Transaction) => {
   switch (transaction.currency) {
@@ -26,11 +28,35 @@ const formatAsUsd = async (transaction: Transaction) => {
 };
 
 export const transactionSelectHandler = async (ctx: Context) => {
-  const transactionId = (ctx as any).match[1];
-  if (!transactionId) {
+  const [
+    currentPageLink,
+    transactionShortIdString,
+    statisticsType,
+    bankAccountShortId,
+    year,
+    groupNumber,
+    transactionType,
+    sortField,
+    sortDirection,
+    pageString,
+    action,
+  ] = (ctx as any).match;
+
+  if (!transactionShortIdString) {
     return;
   }
-  const transaction = await transactionRepository.getTransaction(transactionId);
+  const transactionShortId = parseInt(transactionShortIdString);
+
+  if (action === BotCallbackQuery.TransactionTypeToggle) {
+    await transactionRepository.toggleTransactionType(transactionShortId);
+  }
+  if (action === BotCallbackQuery.TransactionIsCountableToggle) {
+    await transactionRepository.toggleTransactionCountable(transactionShortId);
+  }
+
+  const transaction = await transactionRepository.getTransactionByShortId(
+    transactionShortId
+  );
   assert(transaction);
   try {
     await ctx.deleteMessage();
@@ -50,6 +76,22 @@ ${formatMoney(
   { asFloat: true }
 )} ${asUsd}
 `,
-    Markup.inlineKeyboard(buildTransactionPageMenu(transaction))
+    Markup.inlineKeyboard(
+      buildTransactionPageMenu({
+        transaction,
+        currentPageLink,
+        action,
+        backLink: generateTransactionListLink({
+          type: statisticsType,
+          bankAccountShortId: bankAccountShortId,
+          page: pageString,
+          sortField,
+          sortDirection,
+          groupYear: year,
+          groupNumber,
+          filter: transactionType,
+        }),
+      })
+    )
   );
 };

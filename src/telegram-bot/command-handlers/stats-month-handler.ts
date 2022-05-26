@@ -9,8 +9,8 @@ import { StatisticGroupByType } from '../../repository/transaction-repository';
 import { buildMonthStatisticsMenu } from '../menu-builders/build-month-statistics-menu';
 
 export const statsMonthHandler = async (ctx: Context) => {
-  const bankAccountId = (ctx as any).match[1];
-  if (!bankAccountId) {
+  const bankAccountShortIdString = (ctx as any).match[1];
+  if (!bankAccountShortIdString) {
     return;
   }
 
@@ -19,12 +19,15 @@ export const statsMonthHandler = async (ctx: Context) => {
     ctx.callbackQuery.from.id
   );
 
-  const bankAccount = await bankRepository.getBankAccountById(bankAccountId);
+  const bankAccountId = parseInt(bankAccountShortIdString);
+  const bankAccount = await bankRepository.getBankAccountByShortId(
+    bankAccountId
+  );
   assert(bankAccount);
   const transactions =
     await transactionRepository.getUserTransactionsExpensesGrouped({
       userId: user.id,
-      bankAccountId: bankAccountId,
+      bankAccountId: bankAccount.id,
       type: StatisticGroupByType.Month,
     });
 

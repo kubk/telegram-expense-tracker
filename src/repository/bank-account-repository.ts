@@ -61,6 +61,14 @@ export class BankAccountRepository {
     });
   }
 
+  getBankAccountByShortId(bankAccountShortId: number) {
+    return prisma.bankAccount.findFirst({
+      where: {
+        shortId: bankAccountShortId,
+      },
+    });
+  }
+
   createBankAccount(input: {
     name: string;
     currency: Currency;

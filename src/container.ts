@@ -22,4 +22,4 @@ export const cache = createCache({
   cachePath: `${__dirname}/../cache`,
   zip: !isDev(),
 });
-export const bot = createBot({ logTelegram: isDev() });
+export const bot = createBot({ logTelegram: false });
