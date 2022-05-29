@@ -10,6 +10,18 @@ import { assert } from 'ts-essentials';
 import { isUploadingBankStatement } from '../user-state';
 import { buildBankAccountListMenu } from '../menu-builders/build-bank-account-list-menu';
 
+const getTemporaryTelegramFileContents = async (ctx: Context) => {
+  // @ts-expect-error It looks like Telegraf typings are outdated
+  const fileId = ctx.update.message.document.file_id;
+
+  const fileUrl = await ctx.telegram.getFileLink(fileId);
+  const response = await axios.get(fileUrl.toString(), {
+    responseType: 'arraybuffer',
+  });
+
+  return Buffer.from(response.data, 'utf-8');
+};
+
 export const bankStatementUploadedHandler = async (ctx: Context) => {
   assert(ctx.message);
   const user = await userRepository.getUserByTelegramIdOrThrow(
@@ -18,21 +30,19 @@ export const bankStatementUploadedHandler = async (ctx: Context) => {
   const { state } = user.telegramProfile;
   assert(isUploadingBankStatement(state));
 
-  // @ts-expect-error It looks like Telegraf typings are outdated
-  const fileId = ctx.update.message.document.file_id;
+  const parsedTransactions = await parseTransactions(
+    await getTemporaryTelegramFileContents(ctx)
+  );
 
-  const fileUrl = await ctx.telegram.getFileLink(fileId);
-  const response = await axios.get(fileUrl.toString(), {
-    responseType: 'arraybuffer',
-  });
-  const buffer = Buffer.from(response.data, 'utf-8');
-  const parsedTransactions = await parseTransactions(buffer);
+  const bankAccount = await bankRepository.getBankAccountByShortId(
+    state.bankAccountShortId
+  );
 
   const result = await transactionRepository.importTransactions(
-    state.bankAccountId,
+    bankAccount.id,
     parsedTransactions.map((item) => ({
       ...item,
-      bankAccountId: state.bankAccountId,
+      bankAccountId: bankAccount.id,
     }))
   );
 

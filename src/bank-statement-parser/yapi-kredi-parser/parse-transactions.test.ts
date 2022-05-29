@@ -20,7 +20,7 @@ testIf(
         bankAccountId,
         result.map((item) => ({
           ...item,
-          bankAccountId: bankAccountId,
+          bankAccountId,
         }))
       );
     };

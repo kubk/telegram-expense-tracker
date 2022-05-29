@@ -4,11 +4,12 @@ import { withCancelText } from '../with-cancel-text';
 import { Context } from 'telegraf';
 
 export const goToUploadBankStatementHandler = async (ctx: Context) => {
-  const bankAccountId = (ctx as any).match[1];
-  if (!bankAccountId) {
+  const bankAccountShortIdString = (ctx as any).match[1];
+  if (!bankAccountShortIdString) {
     return;
   }
 
+  const bankAccountShortId = parseInt(bankAccountShortIdString);
   assert(ctx.callbackQuery);
   const user = await userRepository.getUserByTelegramIdOrThrow(
     ctx.callbackQuery.from.id
@@ -16,7 +17,7 @@ export const goToUploadBankStatementHandler = async (ctx: Context) => {
 
   await userRepository.setUserState(user.telegramProfile.id, {
     type: 'uploadingBankStatement',
-    bankAccountId: bankAccountId,
+    bankAccountShortId,
   });
 
   await ctx.reply(withCancelText('Please upload a bank statement'));

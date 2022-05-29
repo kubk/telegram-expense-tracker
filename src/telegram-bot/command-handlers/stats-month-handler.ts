@@ -23,7 +23,6 @@ export const statsMonthHandler = async (ctx: Context) => {
   const bankAccount = await bankRepository.getBankAccountByShortId(
     bankAccountId
   );
-  assert(bankAccount);
   const transactions =
     await transactionRepository.getUserTransactionsExpensesGrouped({
       userId: user.id,

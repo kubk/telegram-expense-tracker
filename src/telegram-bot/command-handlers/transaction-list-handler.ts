@@ -85,7 +85,6 @@ export const transactionListHandler = async (ctx: Context) => {
   const bankAccount = await bankRepository.getBankAccountByShortId(
     bankAccountShortId
   );
-  assert(bankAccount);
 
   await ctx.editMessageReplyMarkup({
     inline_keyboard: buildTransactionPaginatedResult({

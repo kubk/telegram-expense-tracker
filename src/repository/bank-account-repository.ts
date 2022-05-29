@@ -6,7 +6,7 @@ import {
 } from '@prisma/client';
 import { prisma } from '../container';
 import { TransactionType } from './transaction-repository';
-import { UnreachableCaseError } from 'ts-essentials';
+import { assert, UnreachableCaseError } from 'ts-essentials';
 
 const getTransactionTypeFilter = (transactionType: TransactionType) => {
   switch (transactionType) {
@@ -61,12 +61,14 @@ export class BankAccountRepository {
     });
   }
 
-  getBankAccountByShortId(bankAccountShortId: number) {
-    return prisma.bankAccount.findFirst({
+  async getBankAccountByShortId(bankAccountShortId: number) {
+    const result = await prisma.bankAccount.findFirst({
       where: {
         shortId: bankAccountShortId,
       },
     });
+    assert(result);
+    return result;
   }
 
   createBankAccount(input: {

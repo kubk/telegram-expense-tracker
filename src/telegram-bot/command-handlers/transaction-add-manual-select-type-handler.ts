@@ -30,7 +30,6 @@ export const transactionAddManualSelectTypeHandler = async (ctx: Context) => {
   const bankAccount = await bankRepository.getBankAccountByShortId(
     bankAccountId
   );
-  assert(bankAccount);
   assert(ctx.callbackQuery);
 
   const user = await userRepository.getUserByTelegramIdOrThrow(

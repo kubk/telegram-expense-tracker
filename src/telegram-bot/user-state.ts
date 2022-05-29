@@ -28,7 +28,7 @@ type AddingTransactionTitle = {
 
 type UploadingBankStatement = {
   type: 'uploadingBankStatement';
-  bankAccountId: string;
+  bankAccountShortId: number;
 };
 
 export type UserState =
