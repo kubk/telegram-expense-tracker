@@ -44,13 +44,14 @@ model Family {
 }
 
 model BankAccount {
-  id           String        @id @default(uuid())
+  id           String                  @id @default(uuid())
   currency     Currency
   name         String
   familyId     String
-  shortId      Int           @default(autoincrement())
-  family       Family        @relation(fields: [familyId], references: [id])
+  shortId      Int                     @default(autoincrement())
+  family       Family                  @relation(fields: [familyId], references: [id])
   transactions Transaction[]
+  filters      FilterTransactionName[]
 }
 
 model Transaction {
@@ -65,4 +66,12 @@ model Transaction {
   info          String
   bankAccountId String
   bankAccount   BankAccount       @relation(fields: [bankAccountId], references: [id])
+}
+
+model FilterTransactionName {
+  name          String
+  bankAccountId String
+  bankAccount   BankAccount @relation(fields: [bankAccountId], references: [id])
+
+  @@id(fields: [name, bankAccountId])
 }

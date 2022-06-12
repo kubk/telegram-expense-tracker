@@ -66,6 +66,9 @@ export class BankAccountRepository {
       where: {
         shortId: bankAccountShortId,
       },
+      include: {
+        filters: true,
+      },
     });
     assert(result);
     return result;

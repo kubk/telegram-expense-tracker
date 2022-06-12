@@ -93,6 +93,7 @@ export const transactionListHandler = async (ctx: Context) => {
       filter: transactionType,
       sortDirection,
       sortField,
+      transactionTitleFilters: bankAccount.filters,
       bankAccount: bankAccount,
       groupYear: parseInt(year),
       groupNumber: parseInt(groupNumber),

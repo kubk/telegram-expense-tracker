@@ -1,4 +1,9 @@
-import { BankAccount, Transaction, TransactionSource } from '@prisma/client';
+import {
+  BankAccount,
+  FilterTransactionName,
+  Transaction,
+  TransactionSource,
+} from '@prisma/client';
 import { Markup } from 'telegraf';
 import { BotButtons, BotCallbackQuery } from '../bot-action';
 import {
@@ -12,6 +17,7 @@ import { UnreachableCaseError } from 'ts-essentials';
 import { PaginatedResult } from '../../lib/pagination/pagination';
 import { boolNarrow } from '../../lib/typescript/bool-narrow';
 import { generateTransactionListLink } from './generate-transaction-list-link';
+import { filterTransactionTitle } from './filter-transaction-title';
 
 const getTransactionSourceIcon = (transactionSource: TransactionSource) => {
   switch (transactionSource) {
@@ -26,13 +32,6 @@ const getTransactionSourceIcon = (transactionSource: TransactionSource) => {
 
 const getTransactionIsCountableIcon = (transaction: Transaction) => {
   return transaction.isCountable ? '' : '👻';
-};
-
-const filterTransactionTitle = (title: string) => {
-  return title
-    .replace(/POS TMSZ /, '')
-    .replace(/\d{4,6} \|? ?\d{4,6}$/, '')
-    .replace(/^EPOS/, '');
 };
 
 const getBackButtonInlineQuery = (type: StatisticGroupByType) => {
@@ -85,6 +84,7 @@ export const buildTransactionPaginatedResult = (options: {
   bankAccount: Pick<BankAccount, 'id' | 'shortId' | 'currency'>;
   groupYear: number;
   groupNumber: number;
+  transactionTitleFilters: FilterTransactionName[];
   filter: UserTransactionListFilter;
   sortDirection: TransactionSortDirection;
   sortField: TransactionSortField;
@@ -98,6 +98,7 @@ export const buildTransactionPaginatedResult = (options: {
     filter,
     sortDirection,
     sortField,
+    transactionTitleFilters,
   } = options;
 
   const backButtonInlineQuery = getBackButtonInlineQuery(type);
@@ -143,7 +144,10 @@ export const buildTransactionPaginatedResult = (options: {
       });
       const icon = getTransactionSourceIcon(transaction.source);
       const isCountable = getTransactionIsCountableIcon(transaction);
-      const title = filterTransactionTitle(transaction.title);
+      const title = filterTransactionTitle(
+        transaction.title,
+        transactionTitleFilters
+      );
 
       return [
         Markup.button.callback(
