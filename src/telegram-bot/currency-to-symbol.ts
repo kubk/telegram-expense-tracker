@@ -7,6 +7,10 @@ export const currencyToSymbol = (currency: Currency) => {
       return '$';
     case Currency.TRY:
       return '₺';
+    case Currency.EUR:
+      return '€';
+    case Currency.RUB:
+      return '₽';
     default:
       throw new UnreachableCaseError(currency);
   }

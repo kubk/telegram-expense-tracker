@@ -10,9 +10,9 @@ export const getCurrencyAmountInUsd = async (
   amountSafe: number,
   date: DateTime
 ) => {
-  const rate = await cache.wrap(`${from}:${date.toFormat('yyyy-MM')}`, () =>
-    getCurrencyToUsdHistoricalRate(from, amountSafe, date)
-  );
+  const rate = await cache.wrap(`${from}:${date.toFormat('yyyy-MM')}`, () => {
+    return getCurrencyToUsdHistoricalRate(from, amountSafe, date);
+  });
 
   return {
     currency: Currency.USD,

@@ -2,7 +2,7 @@
 
 A Telegram bot for tracking expenses. Available features:
 - Multi user account support. You can give access to your family's budget to anyone from your family
-- Multi bank account support with different currencies. Currently only USD and TRY are supported
+- Multi bank account support with different currencies
 - Montly and weekly expense / income statistics
 - Allow to exclude specific transactions from statistics. Example use case - your friends asked you to pay for something online and then returned you this amount in cash or in crypto. You don't want to count this transaction as a spending.
 - Parsing bank statements (currently only for Yapı Kredi Bankası, but other banks can be added)

@@ -11,6 +11,8 @@ import { BotCallbackQuery } from '../bot-action';
 
 const formatAsUsd = async (transaction: Transaction) => {
   switch (transaction.currency) {
+    case Currency.EUR:
+    case Currency.RUB:
     case Currency.TRY: {
       const converted = await getCurrencyAmountInUsd(
         transaction.currency,

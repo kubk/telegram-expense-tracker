@@ -13,6 +13,8 @@ datasource db {
 enum Currency {
   TRY
   USD
+  EUR
+  RUB
 }
 
 enum TransactionSource {
