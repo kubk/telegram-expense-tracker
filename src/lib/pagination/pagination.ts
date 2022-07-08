@@ -1,4 +1,3 @@
-import { config } from '../../container';
 import { assert } from 'ts-essentials';
 
 export type PaginatedResult<T> = {

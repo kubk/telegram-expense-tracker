@@ -1,8 +1,5 @@
-import {
-  StatisticGroupByType,
-  UserTransactionExpenseRowItem,
-} from '../../repository/transaction-repository';
-import { BankAccount, Currency } from '@prisma/client';
+import { UserTransactionExpenseRowItem } from '../../repository/transaction-repository';
+import { BankAccount } from '@prisma/client';
 import { buildStatisticGridMenu } from './build-statistic-grid-menu';
 import { Markup } from 'telegraf';
 import { BotCallbackQuery } from '../bot-action';
@@ -13,12 +10,7 @@ export const buildMonthStatisticsMenu = (
 ) => {
   return [
     ...statisticRows.map((row) => {
-      return buildStatisticGridMenu(
-        row,
-        StatisticGroupByType.Month,
-        bankAccount,
-        1
-      );
+      return buildStatisticGridMenu(row, bankAccount, 1);
     }),
     [
       Markup.button.callback(

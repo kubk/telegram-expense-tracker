@@ -2,15 +2,11 @@ import { Context } from 'telegraf';
 import { isNumber } from '../../lib/validaton/is-number';
 import { isValidEnumValue } from '../../lib/typescript/is-valid-enum-value';
 import {
-  StatisticGroupByType,
   TransactionSortDirection,
   TransactionSortField,
   UserTransactionListFilter,
 } from '../../repository/transaction-repository';
-import {
-  getDateRangeFromMonth,
-  getDateRangeFromWeek,
-} from '../../lib/date/get-date-range';
+import { getDateRangeFromMonth } from '../../lib/date/get-date-range';
 import { assert } from 'ts-essentials';
 import {
   bankRepository,
@@ -19,25 +15,13 @@ import {
 } from '../../container';
 import { buildTransactionPaginatedResult } from '../menu-builders/build-transactions-paginated-menu';
 
-const getDateFilter = (
-  statisticsType: StatisticGroupByType,
-  year: string,
-  groupNumber: string
-) => {
-  switch (statisticsType) {
-    case StatisticGroupByType.Week:
-      return getDateRangeFromWeek(parseInt(year), parseInt(groupNumber));
-    case StatisticGroupByType.Month:
-      return getDateRangeFromMonth(parseInt(year), parseInt(groupNumber));
-    default:
-      throw new Error(`Invalid statistic type${statisticsType}`);
-  }
+const getDateFilter = (year: string, groupNumber: string) => {
+  return getDateRangeFromMonth(parseInt(year), parseInt(groupNumber));
 };
 
 export const transactionListHandler = async (ctx: Context) => {
   const [
     ,
-    statisticsType,
     bankAccountShortIdString,
     year,
     groupNumber,
@@ -52,13 +36,12 @@ export const transactionListHandler = async (ctx: Context) => {
     !bankAccountShortIdString ||
     !isNumber(page) ||
     !isValidEnumValue(transactionType, UserTransactionListFilter) ||
-    !isValidEnumValue(statisticsType, StatisticGroupByType) ||
     !isValidEnumValue(sortField, TransactionSortField) ||
     !isValidEnumValue(sortDirection, TransactionSortDirection)
   ) {
     return;
   }
-  const dateFilter = getDateFilter(statisticsType, year, groupNumber);
+  const dateFilter = getDateFilter(year, groupNumber);
 
   assert(ctx.callbackQuery);
   const user = await userRepository.getUserByTelegramIdOrThrow(
@@ -89,11 +72,9 @@ export const transactionListHandler = async (ctx: Context) => {
   await ctx.editMessageReplyMarkup({
     inline_keyboard: buildTransactionPaginatedResult({
       transactionsPaginated: result,
-      type: statisticsType,
       filter: transactionType,
       sortDirection,
       sortField,
-      transactionTitleFilters: bankAccount.filters,
       bankAccount: bankAccount,
       groupYear: parseInt(year),
       groupNumber: parseInt(groupNumber),

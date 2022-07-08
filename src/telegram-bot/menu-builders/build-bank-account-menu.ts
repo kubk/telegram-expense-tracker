@@ -11,12 +11,6 @@ export const buildBankAccountMenu = (bankAccountShortId: number) => {
     ],
     [
       Markup.button.callback(
-        humanizeButton(BotButtons.StatisticWeeksButton),
-        `${BotButtons.StatisticWeeksButton}:${bankAccountShortId}`
-      ),
-    ],
-    [
-      Markup.button.callback(
         humanizeButton(BotButtons.UploadBankStatementButton),
         `${BotButtons.UploadBankStatementButton}:${bankAccountShortId}`
       ),

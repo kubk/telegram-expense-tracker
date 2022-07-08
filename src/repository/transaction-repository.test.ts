@@ -1,12 +1,12 @@
-import { fixtures, useRefreshDb } from '../fixtures/use-refresh-db';
+import { fixtures, testNow, useRefreshDb } from '../fixtures/use-refresh-db';
 import { transactionRepository } from '../container';
 import {
-  StatisticGroupByType,
   TransactionSortDirection,
   TransactionSortField,
   UserTransactionListFilter,
 } from './transaction-repository';
 import { DateTime } from 'luxon';
+import { Currency } from '@prisma/client';
 
 useRefreshDb();
 
@@ -169,7 +169,6 @@ test('transaction monthly starts - TRY bank account', async () => {
     await transactionRepository.getUserTransactionsExpensesGrouped({
       userId: fixtures.users.user_1.uuid,
       bankAccountId: fixtures.bankAccounts.user_1_ba_try.uuid,
-      type: StatisticGroupByType.Month,
     })
   ).toStrictEqual(expectedTryBankAccountStats);
 
@@ -177,82 +176,6 @@ test('transaction monthly starts - TRY bank account', async () => {
     await transactionRepository.getUserTransactionsExpensesGrouped({
       userId: fixtures.users.user_2.uuid,
       bankAccountId: fixtures.bankAccounts.user_1_ba_try.uuid,
-      type: StatisticGroupByType.Month,
-    })
-  ).toStrictEqual(expectedTryBankAccountStats);
-});
-
-test('transaction weekly starts - USD bank account', async () => {
-  const expectedTryBankAccountStats = expect.arrayContaining([
-    expect.objectContaining({
-      currency: 'USD',
-      difference: 199000,
-      groupname: 'W.14',
-      groupnumber: 14,
-      groupyear: 2022,
-      income: 200000,
-      outcome: -1000,
-    }),
-    expect.objectContaining({
-      currency: null,
-      difference: 0,
-      groupname: 'W.13',
-      groupnumber: 13,
-      groupyear: 2022,
-      income: 0,
-      outcome: 0,
-    }),
-    expect.objectContaining({
-      currency: null,
-      difference: 0,
-      groupname: 'W.12',
-      groupnumber: 12,
-      groupyear: 2022,
-      income: 0,
-      outcome: 0,
-    }),
-    expect.objectContaining({
-      currency: null,
-      difference: 0,
-      groupyear: 2022,
-      groupname: 'W.11',
-      groupnumber: 11,
-      income: 0,
-      outcome: 0,
-    }),
-    expect.objectContaining({
-      currency: null,
-      difference: 0,
-      groupname: 'W.10',
-      groupnumber: 10,
-      groupyear: 2022,
-      income: 0,
-      outcome: 0,
-    }),
-    expect.objectContaining({
-      currency: 'USD',
-      difference: 50000,
-      groupname: 'W.9',
-      groupnumber: 9,
-      groupyear: 2022,
-      income: 50000,
-      outcome: 0,
-    }),
-  ]);
-
-  expect(
-    await transactionRepository.getUserTransactionsExpensesGrouped({
-      userId: fixtures.users.user_1.uuid,
-      bankAccountId: fixtures.bankAccounts.user_1_ba_usd.uuid,
-      type: StatisticGroupByType.Week,
-    })
-  ).toStrictEqual(expectedTryBankAccountStats);
-
-  expect(
-    await transactionRepository.getUserTransactionsExpensesGrouped({
-      userId: fixtures.users.user_2.uuid,
-      bankAccountId: fixtures.bankAccounts.user_1_ba_usd.uuid,
-      type: StatisticGroupByType.Week,
     })
   ).toStrictEqual(expectedTryBankAccountStats);
 });
@@ -283,7 +206,6 @@ test('transaction monthly stats - USD bank account', async () => {
     await transactionRepository.getUserTransactionsExpensesGrouped({
       userId: fixtures.users.user_1.uuid,
       bankAccountId: fixtures.bankAccounts.user_1_ba_usd.uuid,
-      type: StatisticGroupByType.Month,
     })
   ).toStrictEqual(expectedUsdBankAccountStats);
 
@@ -291,7 +213,6 @@ test('transaction monthly stats - USD bank account', async () => {
     await transactionRepository.getUserTransactionsExpensesGrouped({
       userId: fixtures.users.user_2.uuid,
       bankAccountId: fixtures.bankAccounts.user_1_ba_usd.uuid,
-      type: StatisticGroupByType.Month,
     })
   ).toStrictEqual(expectedUsdBankAccountStats);
 });
@@ -341,4 +262,94 @@ test('create manual transaction', async () => {
   expect(transactionsBefore.items.length).toBe(
     transactionsAfter.items.length - 1
   );
+});
+
+test('importTransaction applies import rules and does not touch non-matched transactions', async () => {
+  const getLast10Transactions = () =>
+    transactionRepository.getUserTransactionList({
+      userId: fixtures.users.user_1.uuid,
+      bankAccountShortId: fixtures.bankAccounts.user_1_ba_try.short,
+      pagination: {
+        page: 1,
+        perPage: 10,
+      },
+      filter: {
+        transactionType: UserTransactionListFilter.NoFilter,
+        dateFrom: DateTime.now().startOf('year').toJSDate(),
+        dateTo: DateTime.now().endOf('year').toJSDate(),
+        sortDirection: TransactionSortDirection.Desc,
+        sortField: TransactionSortField.Date,
+      },
+    });
+
+  const expectedUsdBankAccountBeforeImport = expect.arrayContaining([
+    expect.objectContaining({
+      title: 'Migros Buy',
+      isCountable: true,
+    }),
+    expect.objectContaining({
+      title: 'Digital Ocean',
+      isCountable: true,
+    }),
+    expect.objectContaining({
+      title: 'Payment for UK certificate',
+      isCountable: false,
+    }),
+  ]);
+
+  const actualBeforeImport = (await getLast10Transactions()).items;
+  expect(actualBeforeImport).toStrictEqual(expectedUsdBankAccountBeforeImport);
+
+  await transactionRepository.importTransactions(
+    fixtures.bankAccounts.user_1_ba_try.uuid,
+    [
+      {
+        createdAt: testNow.toJSDate(),
+        amount: -550,
+        currency: Currency.TRY,
+        title: 'Migros Buy',
+        info: 'Other',
+      },
+      {
+        createdAt: testNow.toJSDate(),
+        amount: -5550,
+        currency: Currency.TRY,
+        title: 'Digital Ocean',
+        info: 'Other',
+      },
+      {
+        createdAt: testNow.toJSDate(),
+        amount: -5550,
+        currency: Currency.TRY,
+        title: 'Payment for UK certificate',
+        info: 'Other',
+      },
+    ]
+  );
+
+  const expectedUsdBankAccountAfterImport = expect.arrayContaining([
+    expect.objectContaining({
+      title: 'Migros', // <-- Changed from Migros Buy to Migros because there is a rule in fixtures
+      isCountable: true,
+    }),
+    expect.not.objectContaining({
+      title: 'Migros Buy', // <-- Changed from Migros Buy to Migros because there is a rule in fixtures
+      isCountable: true,
+    }),
+    expect.objectContaining({
+      title: 'Digital Ocean',
+      isCountable: false, // <-- Changed to false because there is a rule in fixtures
+    }),
+    expect.not.objectContaining({
+      title: 'Digital Ocean',
+      isCountable: true, // <-- Changed to false because there is a rule in fixtures
+    }),
+    expect.objectContaining({
+      title: 'Payment for UK certificate',
+      isCountable: false,
+    }),
+  ]);
+
+  const actualAfterImport = (await getLast10Transactions()).items;
+  expect(actualAfterImport).toStrictEqual(expectedUsdBankAccountAfterImport);
 });

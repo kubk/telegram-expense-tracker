@@ -1,12 +1,10 @@
 import {
-  StatisticGroupByType,
   TransactionSortDirection,
   TransactionSortField,
   UserTransactionListFilter,
 } from '../../repository/transaction-repository';
 
 export const generateTransactionListLink = (options: {
-  type: StatisticGroupByType;
   bankAccountShortId: number;
   groupYear: number;
   groupNumber: number;
@@ -16,7 +14,6 @@ export const generateTransactionListLink = (options: {
   page: number;
 }) => {
   return [
-    options.type,
     options.bankAccountShortId,
     options.groupYear,
     options.groupNumber,

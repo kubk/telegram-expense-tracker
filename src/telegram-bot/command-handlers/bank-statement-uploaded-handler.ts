@@ -40,10 +40,7 @@ export const bankStatementUploadedHandler = async (ctx: Context) => {
 
   const result = await transactionRepository.importTransactions(
     bankAccount.id,
-    parsedTransactions.map((item) => ({
-      ...item,
-      bankAccountId: bankAccount.id,
-    }))
+    parsedTransactions
   );
 
   await ctx.reply(`Transaction list has been imported.

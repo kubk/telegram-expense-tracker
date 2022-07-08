@@ -17,6 +17,11 @@ enum Currency {
   RUB
 }
 
+enum TransactionImportRuleType {
+  MakeUncountable
+  FilterTransactionName
+}
+
 enum TransactionSource {
   IMPORTED
   MANUAL
@@ -53,7 +58,7 @@ model BankAccount {
   shortId      Int                     @default(autoincrement())
   family       Family                  @relation(fields: [familyId], references: [id])
   transactions Transaction[]
-  filters      FilterTransactionName[]
+  filters      TransactionImportRule[]
 }
 
 model Transaction {
@@ -70,10 +75,11 @@ model Transaction {
   bankAccount   BankAccount       @relation(fields: [bankAccountId], references: [id])
 }
 
-model FilterTransactionName {
+model TransactionImportRule {
   name          String
   bankAccountId String
-  bankAccount   BankAccount @relation(fields: [bankAccountId], references: [id])
+  bankAccount   BankAccount               @relation(fields: [bankAccountId], references: [id])
+  type          TransactionImportRuleType @default(FilterTransactionName)
 
   @@id(fields: [name, bankAccountId])
 }

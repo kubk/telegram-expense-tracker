@@ -1,5 +1,9 @@
 import { prisma } from '../container';
-import { Currency, TransactionSource } from '@prisma/client';
+import {
+  Currency,
+  TransactionImportRuleType,
+  TransactionSource,
+} from '@prisma/client';
 import { DateTime } from 'luxon';
 import { getEnvSafe } from '../lib/env/env';
 
@@ -22,7 +26,7 @@ export const fixtures = {
   },
 };
 
-const now = DateTime.fromISO('2022-04-05');
+export const testNow = DateTime.fromISO('2022-04-05');
 
 export const useRefreshDb = () => {
   afterEach(() => {
@@ -79,24 +83,36 @@ $$ LANGUAGE plpgsql;
               shortId: fixtures.bankAccounts.user_1_ba_try.short,
               currency: Currency.TRY,
               name: 'Yapi Kredi',
+              filters: {
+                create: [
+                  {
+                    type: TransactionImportRuleType.MakeUncountable,
+                    name: 'Digital Ocean',
+                  },
+                  {
+                    type: TransactionImportRuleType.FilterTransactionName,
+                    name: ' Buy',
+                  },
+                ],
+              },
               transactions: {
                 create: [
                   {
-                    createdAt: now.toJSDate(),
+                    createdAt: testNow.toJSDate(),
                     amount: -550,
                     currency: Currency.TRY,
                     title: 'Migros Buy',
                     info: 'Other',
                   },
                   {
-                    createdAt: now.toJSDate(),
+                    createdAt: testNow.toJSDate(),
                     amount: -5550,
                     currency: Currency.TRY,
                     title: 'Digital Ocean',
                     info: 'Other',
                   },
                   {
-                    createdAt: now.toJSDate(),
+                    createdAt: testNow.toJSDate(),
                     amount: -5550,
                     currency: Currency.TRY,
                     title: 'Payment for UK certificate',
@@ -115,21 +131,21 @@ $$ LANGUAGE plpgsql;
               transactions: {
                 create: [
                   {
-                    createdAt: now.toJSDate(),
+                    createdAt: testNow.toJSDate(),
                     amount: -1000,
                     currency: Currency.USD,
                     title: 'Amazon',
                     info: 'Other',
                   },
                   {
-                    createdAt: now.toJSDate(),
+                    createdAt: testNow.toJSDate(),
                     amount: 2000 * 100,
                     currency: Currency.USD,
                     title: 'USDT withdraw',
                     info: 'Other',
                   },
                   {
-                    createdAt: now.toJSDate(),
+                    createdAt: testNow.toJSDate(),
                     amount: -100 * 100,
                     currency: Currency.USD,
                     title: 'Payment for Digital Ocean',
@@ -137,7 +153,7 @@ $$ LANGUAGE plpgsql;
                     isCountable: false,
                   },
                   {
-                    createdAt: now.minus({ month: 1 }).toJSDate(),
+                    createdAt: testNow.minus({ month: 1 }).toJSDate(),
                     amount: 500 * 100,
                     currency: Currency.USD,
                     title: 'I Talki',

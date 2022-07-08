@@ -6,24 +6,3 @@ Object {
   "to": 2022-01-31T23:59:59.999Z,
 }
 `;
-
-exports[`get date range from week 1`] = `
-Object {
-  "from": 2022-01-03T00:00:00.000Z,
-  "to": 2022-01-09T23:59:59.999Z,
-}
-`;
-
-exports[`get date range from week 2`] = `
-Object {
-  "from": 2022-01-10T00:00:00.000Z,
-  "to": 2022-01-16T23:59:59.999Z,
-}
-`;
-
-exports[`get date range from week 3`] = `
-Object {
-  "from": 2022-01-17T00:00:00.000Z,
-  "to": 2022-01-23T23:59:59.999Z,
-}
-`;

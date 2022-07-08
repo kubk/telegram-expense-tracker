@@ -19,6 +19,7 @@ import { isNumber } from '../../lib/validaton/is-number';
 import { buildBankAccountMenu } from '../menu-builders/build-bank-account-menu';
 import { withCancelText } from '../with-cancel-text';
 import { TransactionType } from '../../repository/transaction-repository';
+import { getBankAccountById } from '../../repository/bank-account-repository';
 
 export const textHandler = async (ctx: Context) => {
   assert(ctx.message);
@@ -98,10 +99,7 @@ export const textHandler = async (ctx: Context) => {
   }
 
   if (isAddingTransactionTitleState(state)) {
-    const bankAccount = await bankRepository.getBankAccountById(
-      state.bankAccountId
-    );
-    assert(bankAccount);
+    const bankAccount = await getBankAccountById(state.bankAccountId);
     assert('text' in ctx.message);
     await transactionRepository.createManualTransaction({
       bankAccountId: bankAccount.id,

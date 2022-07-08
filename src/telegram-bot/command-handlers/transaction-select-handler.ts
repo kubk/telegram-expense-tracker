@@ -33,7 +33,6 @@ export const transactionSelectHandler = async (ctx: Context) => {
   const [
     currentPageLink,
     transactionShortIdString,
-    statisticsType,
     bankAccountShortId,
     year,
     groupNumber,
@@ -84,7 +83,6 @@ ${formatMoney(
         currentPageLink,
         action,
         backLink: generateTransactionListLink({
-          type: statisticsType,
           bankAccountShortId: bankAccountShortId,
           page: pageString,
           sortField,

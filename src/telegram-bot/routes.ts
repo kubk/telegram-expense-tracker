@@ -5,7 +5,6 @@ import { cancelHandler } from './command-handlers/cancel-handler';
 import { bankAccountListButtonHandler } from './command-handlers/bank-account-list-button-handler';
 import { bankAccountAddButtonHandler } from './command-handlers/bank-account-add-button-handler';
 import { statsMonthHandler } from './command-handlers/stats-month-handler';
-import { statsWeekHandler } from './command-handlers/stats-week-handler';
 import { selectBankAccountHandler } from './command-handlers/select-bank-account-handler';
 import { transactionListHandler } from './command-handlers/transaction-list-handler';
 import { transactionAddManualSelectTypeHandler } from './command-handlers/transaction-add-manual-select-type-handler';
@@ -16,10 +15,7 @@ import { transactionDeleteDoHandler } from './command-handlers/transaction-delet
 import { transactionAddManualSelectAmountHandler } from './command-handlers/transaction-add-manual-select-amount-handler';
 import { bankStatementUploadedHandler } from './command-handlers/bank-statement-uploaded-handler';
 import { goToUploadBankStatementHandler } from './command-handlers/go-to-upload-bank-statement-handler';
-import {
-  StatisticGroupByType,
-  TransactionType,
-} from '../repository/transaction-repository';
+import { TransactionType } from '../repository/transaction-repository';
 
 bot.command('start', startHandler);
 bot.command('cancel', cancelHandler);
@@ -38,7 +34,7 @@ bot.action(
 );
 bot.action(
   new RegExp(
-    `${BotCallbackQuery.TransactionSelect}:(.+):([${StatisticGroupByType.Week}${StatisticGroupByType.Month}]):(.+):(\\d{4}):(\\d+):(.+):(.+):(.+):(\\d+):?(.*)`
+    `${BotCallbackQuery.TransactionSelect}:(.+):(.+):(\\d{4}):(\\d+):(.+):(.+):(.+):(\\d+):?(.*)`
   ),
   transactionSelectHandler
 );
@@ -61,13 +57,7 @@ bot.action(
   statsMonthHandler
 );
 bot.action(
-  new RegExp(`${BotButtons.StatisticWeeksButton}:(.+)`),
-  statsWeekHandler
-);
-bot.action(
-  new RegExp(
-    `([${StatisticGroupByType.Week}${StatisticGroupByType.Month}]):(.+):(\\d{4}):(\\d+):(.+):(.+):(.+):(.+)`
-  ),
+  new RegExp(`(.+):(\\d{4}):(\\d+):(.+):(.+):(.+):(.+)`),
   transactionListHandler
 );
 bot.action(

@@ -5,14 +5,15 @@
   "main": "index.js",
   "scripts": {
     "test": "export $(cat .env | xargs) && jest --runInBand",
-    "test:db:migrate": "export $(cat .env | xargs) && npx prisma migrate dev --name init",
+    "test:db:migrate": "export $(cat .env | xargs) && npx prisma migrate dev",
     "test:update-snapshots": "export $(cat .env | xargs) && jest --runInBand --updateSnapshot",
     "dev:db:format": "export $(cat .env.dev | xargs) && npx prisma format",
-    "dev:db:migrate": "export $(cat .env.dev | xargs) && npx prisma migrate dev --name init",
+    "dev:db:migrate": "export $(cat .env.dev | xargs) && npx prisma migrate dev",
     "dev:db:generate-types": "export $(cat .env.dev | xargs) && npx prisma generate",
+    "dev:db:dump-prod-to-dev": "export $(cat .env.prod | xargs) && bin/load-prod-dump-to-dev.sh",
     "dev:start": "export $(cat .env.dev | xargs) && npx ts-node src/telegram-bot/routes.ts",
     "prod:start": "npx pm2 kill && rm -rf ./build && tsc && export $(cat .env.prod | xargs) && npx pm2 start build/telegram-bot/routes.js",
-    "prod:db:migrate": "export $(cat .env.prod | xargs) && npx prisma migrate dev --name init",
+    "prod:db:migrate": "export $(cat .env.prod | xargs) && npx prisma migrate dev",
     "prod:logs": "npx pm2 logs",
     "prod:status": "npx pm2 status",
     "prettier": "npx prettier 'src/**/*.ts' --write"

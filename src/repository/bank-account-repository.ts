@@ -19,6 +19,21 @@ const getTransactionTypeFilter = (transactionType: TransactionType) => {
   }
 };
 
+export const getBankAccountById = async (bankAccountId: string) => {
+  const bankAccount = await prisma.bankAccount.findFirst({
+    where: {
+      id: bankAccountId,
+    },
+    include: {
+      filters: true,
+    },
+  });
+
+  assert(bankAccount);
+
+  return bankAccount;
+};
+
 export class BankAccountRepository {
   async getMostUsedTransactionTitles(
     bankAccountId: string,
@@ -51,14 +66,6 @@ export class BankAccountRepository {
     }
 
     return result;
-  }
-
-  getBankAccountById(bankAccountId: string) {
-    return prisma.bankAccount.findFirst({
-      where: {
-        id: bankAccountId,
-      },
-    });
   }
 
   async getBankAccountByShortId(bankAccountShortId: number) {

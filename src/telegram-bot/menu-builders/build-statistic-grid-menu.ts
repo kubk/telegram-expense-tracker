@@ -1,5 +1,4 @@
 import {
-  StatisticGroupByType,
   TransactionSortDirection,
   TransactionSortField,
   UserTransactionExpenseRowItem,
@@ -12,7 +11,6 @@ import { generateTransactionListLink } from './generate-transaction-list-link';
 
 export const buildStatisticGridMenu = (
   row: UserTransactionExpenseRowItem,
-  type: StatisticGroupByType,
   bankAccount: Pick<BankAccount, 'currency' | 'shortId'>,
   page: number
 ) => {
@@ -25,7 +23,6 @@ export const buildStatisticGridMenu = (
     Markup.button.callback(
       `${row.groupname} ${money}`,
       generateTransactionListLink({
-        type,
         bankAccountShortId: bankAccount.shortId,
         groupYear: row.groupyear,
         groupNumber: row.groupnumber,
@@ -38,7 +35,6 @@ export const buildStatisticGridMenu = (
     Markup.button.callback(
       formatMoney({ amount: row.income, currency: bankAccount.currency }),
       generateTransactionListLink({
-        type,
         bankAccountShortId: bankAccount.shortId,
         groupYear: row.groupyear,
         groupNumber: row.groupnumber,
@@ -51,7 +47,6 @@ export const buildStatisticGridMenu = (
     Markup.button.callback(
       formatMoney({ amount: row.outcome, currency: bankAccount.currency }),
       generateTransactionListLink({
-        type,
         bankAccountShortId: bankAccount.shortId,
         groupYear: row.groupyear,
         groupNumber: row.groupnumber,

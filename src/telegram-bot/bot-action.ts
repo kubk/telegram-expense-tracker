@@ -8,7 +8,6 @@ export enum BotButtons {
   TransactionAddManualButton = 'transaction_add_manual',
   UploadBankStatementButton = 'upload_bank_statement',
   StatisticMonthsButton = 'stats_months',
-  StatisticWeeksButton = 'stats_weeks',
 }
 
 export enum BotCallbackQuery {
@@ -35,8 +34,6 @@ export const humanizeButton = (action: BotButtons) => {
       return '❌ Remove bank account';
     case BotButtons.StatisticMonthsButton:
       return '📈 Monthly statistics';
-    case BotButtons.StatisticWeeksButton:
-      return '📈 Weekly statistics';
     case BotButtons.BankAccountListButtonWithRemove:
       return '◀️ Back to bank accounts';
     default:

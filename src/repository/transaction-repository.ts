@@ -11,6 +11,10 @@ import {
   createPaginatedResult,
 } from '../lib/pagination/pagination';
 import { prisma } from '../container';
+import { applyImportRules } from '../transaction-import-rules/apply-import-rules';
+import { makeTransactionUncountableRule } from '../transaction-import-rules/make-transaction-uncountable-rule';
+import { filterTransactionTitleRule } from '../transaction-import-rules/filter-transaction-title';
+import { getBankAccountById } from './bank-account-repository';
 
 export type UserTransactionExpenseRowItem = {
   outcome: number;
@@ -33,11 +37,6 @@ export enum UserTransactionListFilter {
   NoFilter = 'n',
 }
 
-export enum StatisticGroupByType {
-  Month = 'm',
-  Week = 'w',
-}
-
 export enum TransactionSortDirection {
   Asc = 'a',
   Desc = 'd',
@@ -52,52 +51,10 @@ export class TransactionRepository {
   async getUserTransactionsExpensesGrouped(options: {
     userId: string;
     bankAccountId: string;
-    type: StatisticGroupByType;
   }) {
-    const { userId, bankAccountId, type } = options;
+    const { userId, bankAccountId } = options;
 
-    if (type === StatisticGroupByType.Week) {
-      return prisma.$queryRaw<Array<UserTransactionExpenseRowItem>>`
-        with first_transaction_date AS
-               (select min(t."createdAt") AS createdAt
-                from "Family"
-                       left join "User" U
-                                 on "Family".id = U."familyId" and U.id = ${userId}
-                       left join "BankAccount" BA
-                                 on "Family".id = BA."familyId" and
-                                    BA.id = ${bankAccountId}
-                       left join "Transaction" t
-                                 on BA.id = t."bankAccountId" and
-                                    t."isCountable" = true),
-             weeks AS
-               (select week_start,
-                       (week_start + interval '1 week' -
-                         interval '1 second') AS week_end
-                from generate_series(date_trunc('week',
-                                                (select createdAt from first_transaction_date)),
-                                     now(), '1 week') AS week_start)
-        select sum(case when T.amount < 0 then t.amount else 0 end) as outcome,
-               sum(case when T.amount > 0 then t.amount else 0 end) as income,
-               coalesce(sum(T.amount), 0)                           as difference,
-               ba.currency,
-               extract(year from week_start)                        as groupYear,
-               date_part('week', week_start)                        as groupNumber,
-               'W.' || date_part('week', week_start) ::text     as groupName
-        from "Family"
-               left join "User" u
-                         on "Family".id = u."familyId" and u.id = ${userId}
-               left join "BankAccount" ba on "Family".id = ba."familyId" and
-                                             ba.id = ${bankAccountId}
-               left join "Transaction" t
-                         on ba.id = t."bankAccountId" and t."isCountable" = true
-               right join weeks on t."createdAt" between week_start and week_end
-        group by ba.currency, week_start
-        order by week_start desc
-      `;
-    }
-
-    if (type === StatisticGroupByType.Month) {
-      return prisma.$queryRaw<Array<UserTransactionExpenseRowItem>>`
+    return prisma.$queryRaw<Array<UserTransactionExpenseRowItem>>`
         with first_transaction_date AS
                (select min(t."createdAt") AS createdAt
                 from "Family"
@@ -136,9 +93,6 @@ export class TransactionRepository {
         group by ba.currency, month_start
         order by month_start desc
       `;
-    }
-
-    throw new UnreachableCaseError(type);
   }
 
   async getUserTransactionList(options: {
@@ -255,7 +209,6 @@ export class TransactionRepository {
   async importTransactions(
     bankAccountId: string,
     transactions: Array<{
-      bankAccountId: string;
       amount: number;
       currency: Currency;
       title: string;
@@ -282,6 +235,26 @@ export class TransactionRepository {
     assert(maxTransactionDate);
     assert(minTransactionDate);
 
+    const bankAccount = await getBankAccountById(bankAccountId);
+
+    const newTransactions = transactions
+      .map((input) => ({
+        createdAt: input.createdAt,
+        bankAccountId: bankAccountId,
+        info: input.info,
+        amount: input.amount,
+        currency: input.currency,
+        source: TransactionSource.IMPORTED,
+        title: input.title,
+        isCountable: true,
+      }))
+      .map((transaction) => {
+        return applyImportRules(transaction, bankAccount.filters, [
+          makeTransactionUncountableRule,
+          filterTransactionTitleRule,
+        ]);
+      });
+
     const [removeResult, addResult] = await prisma.$transaction([
       prisma.transaction.deleteMany({
         where: {
@@ -294,15 +267,7 @@ export class TransactionRepository {
         },
       }),
       prisma.transaction.createMany({
-        data: transactions.map((input) => ({
-          createdAt: input.createdAt,
-          bankAccountId: input.bankAccountId,
-          info: input.info,
-          amount: input.amount,
-          currency: input.currency,
-          source: TransactionSource.IMPORTED,
-          title: input.title,
-        })),
+        data: newTransactions,
       }),
     ]);
 

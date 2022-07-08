@@ -23,10 +23,7 @@ import { transactionRepository } from '../src/container';
 
   const result = await transactionRepository.importTransactions(
     bankAccountId,
-    parsedTransactions.map((item) => ({
-      ...item,
-      bankAccountId: bankAccountId,
-    }))
+    parsedTransactions
   );
   console.log({ result });
 })();

@@ -5,7 +5,6 @@ import {
   transactionRepository,
   userRepository,
 } from '../../container';
-import { StatisticGroupByType } from '../../repository/transaction-repository';
 import { buildMonthStatisticsMenu } from '../menu-builders/build-month-statistics-menu';
 
 export const statsMonthHandler = async (ctx: Context) => {
@@ -27,7 +26,6 @@ export const statsMonthHandler = async (ctx: Context) => {
     await transactionRepository.getUserTransactionsExpensesGrouped({
       userId: user.id,
       bankAccountId: bankAccount.id,
-      type: StatisticGroupByType.Month,
     });
 
   await ctx.editMessageReplyMarkup({

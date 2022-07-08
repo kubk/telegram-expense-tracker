@@ -6,6 +6,7 @@ import { isAddingTransactionType } from '../user-state';
 import { withCancelText } from '../with-cancel-text';
 import { isValidEnumValue } from '../../lib/typescript/is-valid-enum-value';
 import { TransactionType } from '../../repository/transaction-repository';
+import { getBankAccountById } from '../../repository/bank-account-repository';
 
 export const transactionAddManualSelectAmountHandler = async (ctx: Context) => {
   assert(ctx.callbackQuery);
@@ -23,10 +24,7 @@ export const transactionAddManualSelectAmountHandler = async (ctx: Context) => {
 
   assert(isAddingTransactionType(state));
 
-  const bankAccount = await bankRepository.getBankAccountById(
-    state.bankAccountId
-  );
-  assert(bankAccount);
+  const bankAccount = await getBankAccountById(state.bankAccountId);
 
   await ctx.reply(
     withCancelText(
