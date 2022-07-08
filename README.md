@@ -33,8 +33,6 @@ stateDiagram-v2
     ubs: Uploading bank statement
     msl: Monthly statistics - month list
     mss: Monthly statistics - month selected
-    wsl: Weekly statistics - week list
-    wss: Weekly statistics - week selected
     amta: Selection transaction amount
     ts: Transaction selected
     amttitle: Selection transaction title
@@ -69,12 +67,6 @@ stateDiagram-v2
     ts --> ts: Change transaction type 
     ts --> mss: Transaction remove
     ts --> mss: Back
-    bas --> wsl: Select weekly statistics
-    wsl --> bas: Back
-    wsl --> wsl: Change page
-    wsl --> wss: Select week
-    wss --> wsl: Back
-    ts --> wss: Back
     bas --> ubs : Select upload bank statement
     ubs --> bas : Cancel
     ubs --> bas : Bank statement uploaded    
