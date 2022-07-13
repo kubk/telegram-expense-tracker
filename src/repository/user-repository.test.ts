@@ -1,30 +1,34 @@
-import { userRepository } from '../container';
 import { useRefreshDb } from '../fixtures/use-refresh-db';
+import {
+  userCreateIfNotExists,
+  userGetByTelegramId,
+  usersGet,
+} from './user-repository';
 
 useRefreshDb();
 
 test('get user by telegram id', async () => {
-  const truthyResult = await userRepository.getUserByTelegramId(1);
+  const truthyResult = await userGetByTelegramId(1);
   expect(truthyResult).toBeTruthy();
 
-  const falsyResult = await userRepository.getUserByTelegramId(9999);
+  const falsyResult = await userGetByTelegramId(9999);
   expect(falsyResult).toBeFalsy();
 });
 
 test('creates user if not exist', async () => {
-  const beforeCreate = await userRepository.getUserList();
+  const beforeCreate = await usersGet();
 
-  await userRepository.createUserIfNotExists(10);
+  await userCreateIfNotExists(10);
 
-  const afterCreate = await userRepository.getUserList();
+  const afterCreate = await usersGet();
   expect(beforeCreate.length).toBe(afterCreate.length - 1);
 });
 
 test('does not create user if not exist', async () => {
-  const beforeCreate = await userRepository.getUserList();
+  const beforeCreate = await usersGet();
 
-  await userRepository.createUserIfNotExists(1);
+  await userCreateIfNotExists(1);
 
-  const afterCreate = await userRepository.getUserList();
+  const afterCreate = await usersGet();
   expect(beforeCreate.length).toBe(afterCreate.length);
 });

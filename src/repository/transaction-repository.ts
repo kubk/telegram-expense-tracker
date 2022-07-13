@@ -10,11 +10,11 @@ import {
   CalcPaginationParams,
   createPaginatedResult,
 } from '../lib/pagination/pagination';
-import { prisma } from '../container';
 import { applyImportRules } from '../transaction-import-rules/apply-import-rules';
 import { makeTransactionUncountableRule } from '../transaction-import-rules/make-transaction-uncountable-rule';
 import { filterTransactionTitleRule } from '../transaction-import-rules/filter-transaction-title';
-import { getBankAccountById } from './bank-account-repository';
+import { bankAccountGetById } from './bank-account-repository';
+import { prisma } from '../db/prisma';
 
 export type UserTransactionExpenseRowItem = {
   outcome: number;
@@ -47,14 +47,13 @@ export enum TransactionSortField {
   Amount = 'a',
 }
 
-export class TransactionRepository {
-  async getUserTransactionsExpensesGrouped(options: {
-    userId: string;
-    bankAccountId: string;
-  }) {
-    const { userId, bankAccountId } = options;
+export const transactionsGetGroupedStatistics = async (options: {
+  userId: string;
+  bankAccountId: string;
+}) => {
+  const { userId, bankAccountId } = options;
 
-    return prisma.$queryRaw<Array<UserTransactionExpenseRowItem>>`
+  return prisma.$queryRaw<Array<UserTransactionExpenseRowItem>>`
         with first_transaction_date AS
                (select min(t."createdAt") AS createdAt
                 from "Family"
@@ -93,66 +92,66 @@ export class TransactionRepository {
         group by ba.currency, month_start
         order by month_start desc
       `;
-  }
+};
 
-  async getUserTransactionList(options: {
-    userId: string;
-    bankAccountShortId: number;
-    pagination: CalcPaginationParams;
-    filter: {
-      dateFrom: Date;
-      dateTo: Date;
-      transactionType: UserTransactionListFilter;
-      sortDirection: TransactionSortDirection;
-      sortField: TransactionSortField;
-    };
-  }) {
-    const {
-      userId,
-      bankAccountShortId,
-      pagination,
-      filter: { dateFrom, dateTo, transactionType, sortDirection, sortField },
-    } = options;
-    const { page } = pagination;
-    const { offset, perPage } = calcPaginationOffset(pagination);
+export const transactionsGetForUser = async (options: {
+  userId: string;
+  bankAccountShortId: number;
+  pagination: CalcPaginationParams;
+  filter: {
+    dateFrom: Date;
+    dateTo: Date;
+    transactionType: UserTransactionListFilter;
+    sortDirection: TransactionSortDirection;
+    sortField: TransactionSortField;
+  };
+}) => {
+  const {
+    userId,
+    bankAccountShortId,
+    pagination,
+    filter: { dateFrom, dateTo, transactionType, sortDirection, sortField },
+  } = options;
+  const { page } = pagination;
+  const { offset, perPage } = calcPaginationOffset(pagination);
 
-    const filterTypeSql = (() => {
-      switch (transactionType) {
-        case UserTransactionListFilter.NoFilter:
-          return Prisma.empty;
-        case UserTransactionListFilter.OnlyIncome:
-          return Prisma.sql`and t.amount > 0`;
-        case UserTransactionListFilter.OnlyOutcome:
-          return Prisma.sql`and t.amount < 0`;
-        default:
-          throw new UnreachableCaseError(transactionType);
-      }
-    })();
+  const filterTypeSql = (() => {
+    switch (transactionType) {
+      case UserTransactionListFilter.NoFilter:
+        return Prisma.empty;
+      case UserTransactionListFilter.OnlyIncome:
+        return Prisma.sql`and t.amount > 0`;
+      case UserTransactionListFilter.OnlyOutcome:
+        return Prisma.sql`and t.amount < 0`;
+      default:
+        throw new UnreachableCaseError(transactionType);
+    }
+  })();
 
-    const sortFieldSql = (() => {
-      switch (sortField) {
-        case TransactionSortField.Amount:
-          return Prisma.sql`t."amount"`;
-        case TransactionSortField.Date:
-          return Prisma.sql`t."createdAt"`;
-        default:
-          throw new UnreachableCaseError(sortField);
-      }
-    })();
+  const sortFieldSql = (() => {
+    switch (sortField) {
+      case TransactionSortField.Amount:
+        return Prisma.sql`t."amount"`;
+      case TransactionSortField.Date:
+        return Prisma.sql`t."createdAt"`;
+      default:
+        throw new UnreachableCaseError(sortField);
+    }
+  })();
 
-    const sortDirectionSql = (() => {
-      switch (sortDirection) {
-        case TransactionSortDirection.Asc:
-          return Prisma.sql`asc`;
-        case TransactionSortDirection.Desc:
-          return Prisma.sql`desc`;
-        default:
-          throw new UnreachableCaseError(sortDirection);
-      }
-    })();
+  const sortDirectionSql = (() => {
+    switch (sortDirection) {
+      case TransactionSortDirection.Asc:
+        return Prisma.sql`asc`;
+      case TransactionSortDirection.Desc:
+        return Prisma.sql`desc`;
+      default:
+        throw new UnreachableCaseError(sortDirection);
+    }
+  })();
 
-    const [countResult, dataResult] = await Promise.all([
-      prisma.$queryRaw<Array<{ count: number }>>`
+  const [countResult, dataResult] = await Promise.all([
+    prisma.$queryRaw<Array<{ count: number }>>`
         select count(t.id) as count
         from "Family"
           left join "User" u
@@ -164,7 +163,7 @@ export class TransactionRepository {
           and t."createdAt" between ${dateFrom}
           and ${dateTo}
       `,
-      prisma.$queryRaw<Transaction[]>`
+    prisma.$queryRaw<Transaction[]>`
         select t.*
         from "Family"
                left join "User" u on "Family".id = u."familyId"
@@ -177,144 +176,145 @@ export class TransactionRepository {
         order by ${sortFieldSql} ${sortDirectionSql}
         offset ${offset} limit ${perPage}
       `,
-    ]);
+  ]);
 
-    return createPaginatedResult({
-      items: dataResult,
-      totalItemsCount: countResult[0].count,
-      perPage: perPage,
-      currentPage: page,
-    });
-  }
+  return createPaginatedResult({
+    items: dataResult,
+    totalItemsCount: countResult[0].count,
+    perPage: perPage,
+    currentPage: page,
+  });
+};
 
-  createManualTransaction(input: {
-    bankAccountId: string;
+export const transactionsImport = async (
+  bankAccountId: string,
+  transactions: Array<{
     amount: number;
     currency: Currency;
     title: string;
-  }) {
-    return prisma.transaction.create({
-      data: {
-        createdAt: new Date(),
-        bankAccountId: input.bankAccountId,
-        info: '',
-        amount: input.amount,
-        currency: input.currency,
-        source: TransactionSource.MANUAL,
-        title: input.title,
-      },
-    });
+    info: string;
+    createdAt: Date;
+  }>
+) => {
+  if (transactions.length < 2) {
+    throw new Error('Minimum transaction amount is 2');
   }
 
-  async importTransactions(
-    bankAccountId: string,
-    transactions: Array<{
-      amount: number;
-      currency: Currency;
-      title: string;
-      info: string;
-      createdAt: Date;
-    }>
-  ) {
-    if (transactions.length < 2) {
-      throw new Error('Minimum transaction amount is 2');
-    }
+  const maxTransactionDate = transactions.reduce<Date | null>(
+    (maxDate, current) =>
+      !maxDate || current.createdAt > maxDate ? current.createdAt : maxDate,
+    null
+  );
 
-    const maxTransactionDate = transactions.reduce<Date | null>(
-      (maxDate, current) =>
-        !maxDate || current.createdAt > maxDate ? current.createdAt : maxDate,
-      null
-    );
+  const minTransactionDate = transactions.reduce<Date | null>(
+    (minDate, current) =>
+      !minDate || current.createdAt < minDate ? current.createdAt : minDate,
+    null
+  );
 
-    const minTransactionDate = transactions.reduce<Date | null>(
-      (minDate, current) =>
-        !minDate || current.createdAt < minDate ? current.createdAt : minDate,
-      null
-    );
+  assert(maxTransactionDate);
+  assert(minTransactionDate);
 
-    assert(maxTransactionDate);
-    assert(minTransactionDate);
+  const bankAccount = await bankAccountGetById(bankAccountId);
 
-    const bankAccount = await getBankAccountById(bankAccountId);
+  const newTransactions = transactions
+    .map((input) => ({
+      createdAt: input.createdAt,
+      bankAccountId: bankAccountId,
+      info: input.info,
+      amount: input.amount,
+      currency: input.currency,
+      source: TransactionSource.IMPORTED,
+      title: input.title,
+      isCountable: true,
+    }))
+    .map((transaction) => {
+      return applyImportRules(transaction, bankAccount.filters, [
+        makeTransactionUncountableRule,
+        filterTransactionTitleRule,
+      ]);
+    });
 
-    const newTransactions = transactions
-      .map((input) => ({
-        createdAt: input.createdAt,
-        bankAccountId: bankAccountId,
-        info: input.info,
-        amount: input.amount,
-        currency: input.currency,
+  const [removeResult, addResult] = await prisma.$transaction([
+    prisma.transaction.deleteMany({
+      where: {
+        bankAccountId,
         source: TransactionSource.IMPORTED,
-        title: input.title,
-        isCountable: true,
-      }))
-      .map((transaction) => {
-        return applyImportRules(transaction, bankAccount.filters, [
-          makeTransactionUncountableRule,
-          filterTransactionTitleRule,
-        ]);
-      });
-
-    const [removeResult, addResult] = await prisma.$transaction([
-      prisma.transaction.deleteMany({
-        where: {
-          bankAccountId,
-          source: TransactionSource.IMPORTED,
-          createdAt: {
-            gte: minTransactionDate,
-            lte: maxTransactionDate,
-          },
+        createdAt: {
+          gte: minTransactionDate,
+          lte: maxTransactionDate,
         },
-      }),
-      prisma.transaction.createMany({
-        data: newTransactions,
-      }),
-    ]);
-
-    return { removed: removeResult.count, added: addResult.count };
-  }
-
-  async getTransaction(transactionId: string) {
-    return prisma.transaction.findUnique({
-      where: {
-        id: transactionId,
       },
-    });
-  }
+    }),
+    prisma.transaction.createMany({
+      data: newTransactions,
+    }),
+  ]);
 
-  async getTransactionByShortId(shortId: number) {
-    return prisma.transaction.findFirst({
-      where: {
-        shortId,
-      },
-    });
-  }
+  return { removed: removeResult.count, added: addResult.count };
+};
 
-  deleteTransaction(transactionId: string) {
-    return prisma.transaction.delete({
-      where: {
-        id: transactionId,
-      },
-    });
-  }
+export const transactionCreateManual = (input: {
+  bankAccountId: string;
+  amount: number;
+  currency: Currency;
+  title: string;
+}) => {
+  return prisma.transaction.create({
+    data: {
+      createdAt: new Date(),
+      bankAccountId: input.bankAccountId,
+      info: '',
+      amount: input.amount,
+      currency: input.currency,
+      source: TransactionSource.MANUAL,
+      title: input.title,
+    },
+  });
+};
 
-  async toggleTransactionCountable(transactionShortId: number) {
-    const transaction = await this.getTransactionByShortId(transactionShortId);
-    assert(transaction);
+export const transactionGetById = (transactionId: string) => {
+  return prisma.transaction.findUnique({
+    where: {
+      id: transactionId,
+    },
+  });
+};
 
-    return prisma.transaction.update({
-      where: { id: transaction.id },
-      data: { isCountable: !transaction.isCountable },
-    });
-  }
+export const transactionGetByShortId = (shortId: number) => {
+  return prisma.transaction.findFirst({
+    where: {
+      shortId,
+    },
+  });
+};
 
-  async toggleTransactionType(transactionShortId: number) {
-    const transaction = await this.getTransactionByShortId(transactionShortId);
-    assert(transaction);
+export const transactionDelete = (transactionId: string) => {
+  return prisma.transaction.delete({
+    where: {
+      id: transactionId,
+    },
+  });
+};
 
-    return prisma.transaction.update({
-      where: { id: transaction.id },
-      data: { amount: -1 * transaction.amount },
-    });
-  }
-}
+export const transactionToggleCountable = async (
+  transactionShortId: number
+) => {
+  const transaction = await transactionGetByShortId(transactionShortId);
+  assert(transaction);
+
+  return prisma.transaction.update({
+    where: { id: transaction.id },
+    data: { isCountable: !transaction.isCountable },
+  });
+};
+
+export const transactionToggleType = async (transactionShortId: number) => {
+  const transaction = await transactionGetByShortId(transactionShortId);
+  assert(transaction);
+
+  return prisma.transaction.update({
+    where: { id: transaction.id },
+    data: { amount: -1 * transaction.amount },
+  });
+};

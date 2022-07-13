@@ -1,4 +1,3 @@
-import { bot } from '../container';
 import { BotButtons, BotCallbackQuery } from './bot-action';
 import { startHandler } from './command-handlers/start-handler';
 import { cancelHandler } from './command-handlers/cancel-handler';
@@ -16,6 +15,9 @@ import { transactionAddManualSelectAmountHandler } from './command-handlers/tran
 import { bankStatementUploadedHandler } from './command-handlers/bank-statement-uploaded-handler';
 import { goToUploadBankStatementHandler } from './command-handlers/go-to-upload-bank-statement-handler';
 import { TransactionType } from '../repository/transaction-repository';
+import { createBot } from './create-bot';
+
+const bot = createBot({ logTelegram: false });
 
 bot.command('start', startHandler);
 bot.command('cancel', cancelHandler);

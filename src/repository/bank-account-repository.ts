@@ -4,9 +4,9 @@ import {
   Prisma,
   TransactionSource,
 } from '@prisma/client';
-import { prisma } from '../container';
 import { TransactionType } from './transaction-repository';
 import { assert, UnreachableCaseError } from 'ts-essentials';
+import { prisma } from '../db/prisma';
 
 const getTransactionTypeFilter = (transactionType: TransactionType) => {
   switch (transactionType) {
@@ -19,7 +19,7 @@ const getTransactionTypeFilter = (transactionType: TransactionType) => {
   }
 };
 
-export const getBankAccountById = async (bankAccountId: string) => {
+export const bankAccountGetById = async (bankAccountId: string) => {
   const bankAccount = await prisma.bankAccount.findFirst({
     where: {
       id: bankAccountId,
@@ -34,12 +34,11 @@ export const getBankAccountById = async (bankAccountId: string) => {
   return bankAccount;
 };
 
-export class BankAccountRepository {
-  async getMostUsedTransactionTitles(
-    bankAccountId: string,
-    transactionType: TransactionType
-  ) {
-    return prisma.$queryRaw<Array<{ title: string }>>`
+export const bankAccountGetMostUsedTransactionTitles = async (
+  bankAccountId: string,
+  transactionType: TransactionType
+) => {
+  return prisma.$queryRaw<Array<{ title: string }>>`
       select t.title
       from "Transaction" t
       where t.source = ${TransactionSource.MANUAL}
@@ -49,10 +48,37 @@ export class BankAccountRepository {
       order by count(*) desc
       limit 15
     `;
-  }
+};
 
-  async getUserBankAccounts(userId: string) {
-    const result = await prisma.$queryRaw<BankAccount[]>`
+export const bankAccountCreate = (input: {
+  name: string;
+  currency: Currency;
+  familyId: string;
+}) => {
+  return prisma.bankAccount.create({
+    data: {
+      currency: input.currency,
+      name: input.name,
+      familyId: input.familyId,
+    },
+  });
+};
+
+export const bankAccountGetByShortId = async (bankAccountShortId: number) => {
+  const result = await prisma.bankAccount.findFirst({
+    where: {
+      shortId: bankAccountShortId,
+    },
+    include: {
+      filters: true,
+    },
+  });
+  assert(result);
+  return result;
+};
+
+export const bankAccountGetForUser = async (userId: string) => {
+  const result = await prisma.$queryRaw<BankAccount[]>`
       select ba.*
       from "Family"
              left join "User" u on "Family".id = u."familyId"
@@ -60,38 +86,10 @@ export class BankAccountRepository {
       where u.id = ${userId}
     `;
 
-    // Why does prisma return 1 empty row when there are no results?
-    if (result.length === 1 && result[0].id === null) {
-      return [];
-    }
-
-    return result;
+  // Why does prisma return 1 empty row when there are no results?
+  if (result.length === 1 && result[0].id === null) {
+    return [];
   }
 
-  async getBankAccountByShortId(bankAccountShortId: number) {
-    const result = await prisma.bankAccount.findFirst({
-      where: {
-        shortId: bankAccountShortId,
-      },
-      include: {
-        filters: true,
-      },
-    });
-    assert(result);
-    return result;
-  }
-
-  createBankAccount(input: {
-    name: string;
-    currency: Currency;
-    familyId: string;
-  }) {
-    return prisma.bankAccount.create({
-      data: {
-        currency: input.currency,
-        name: input.name,
-        familyId: input.familyId,
-      },
-    });
-  }
-}
+  return result;
+};

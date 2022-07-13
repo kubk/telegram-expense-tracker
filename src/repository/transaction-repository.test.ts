@@ -1,6 +1,9 @@
 import { fixtures, testNow, useRefreshDb } from '../fixtures/use-refresh-db';
-import { transactionRepository } from '../container';
 import {
+  transactionCreateManual,
+  transactionsGetForUser,
+  transactionsGetGroupedStatistics,
+  transactionsImport,
   TransactionSortDirection,
   TransactionSortField,
   UserTransactionListFilter,
@@ -11,7 +14,7 @@ import { Currency } from '@prisma/client';
 useRefreshDb();
 
 test('transaction list for user and ba', async () => {
-  const firstResult = await transactionRepository.getUserTransactionList({
+  const firstResult = await transactionsGetForUser({
     userId: fixtures.users.user_1.uuid,
     bankAccountShortId: fixtures.bankAccounts.user_1_ba_try.short,
     pagination: {
@@ -28,7 +31,7 @@ test('transaction list for user and ba', async () => {
   });
   expect(firstResult.items).toHaveLength(3);
 
-  const secondResult = await transactionRepository.getUserTransactionList({
+  const secondResult = await transactionsGetForUser({
     userId: fixtures.users.user_2.uuid,
     bankAccountShortId: fixtures.bankAccounts.user_1_ba_try.short,
     pagination: {
@@ -45,7 +48,7 @@ test('transaction list for user and ba', async () => {
   });
   expect(secondResult.items).toHaveLength(3);
 
-  const thirdResult = await transactionRepository.getUserTransactionList({
+  const thirdResult = await transactionsGetForUser({
     userId: fixtures.users.user_1.uuid,
     bankAccountShortId: fixtures.bankAccounts.user_1_ba_usd.short,
     pagination: {
@@ -62,7 +65,7 @@ test('transaction list for user and ba', async () => {
   });
   expect(thirdResult.items).toHaveLength(4);
 
-  const onlyOutcomeResult = await transactionRepository.getUserTransactionList({
+  const onlyOutcomeResult = await transactionsGetForUser({
     userId: fixtures.users.user_2.uuid,
     bankAccountShortId: fixtures.bankAccounts.user_1_ba_usd.short,
     pagination: {
@@ -79,7 +82,7 @@ test('transaction list for user and ba', async () => {
   });
   expect(onlyOutcomeResult.items).toHaveLength(2);
 
-  const onlyIncomeResult = await transactionRepository.getUserTransactionList({
+  const onlyIncomeResult = await transactionsGetForUser({
     userId: fixtures.users.user_2.uuid,
     bankAccountShortId: fixtures.bankAccounts.user_1_ba_usd.short,
     pagination: {
@@ -98,7 +101,7 @@ test('transaction list for user and ba', async () => {
 });
 
 test('transactions pagination', async () => {
-  const firstPageResult = await transactionRepository.getUserTransactionList({
+  const firstPageResult = await transactionsGetForUser({
     userId: fixtures.users.user_1.uuid,
     bankAccountShortId: fixtures.bankAccounts.user_1_ba_usd.short,
     pagination: {
@@ -120,7 +123,7 @@ test('transactions pagination', async () => {
   expect(firstPageResult.totalItemsCount).toBe(4);
   expect(firstPageResult.totalPages).toBe(2);
 
-  const secondPageResult = await transactionRepository.getUserTransactionList({
+  const secondPageResult = await transactionsGetForUser({
     userId: fixtures.users.user_1.uuid,
     bankAccountShortId: fixtures.bankAccounts.user_1_ba_usd.short,
     pagination: {
@@ -166,14 +169,14 @@ test('transaction monthly starts - TRY bank account', async () => {
   ]);
 
   expect(
-    await transactionRepository.getUserTransactionsExpensesGrouped({
+    await transactionsGetGroupedStatistics({
       userId: fixtures.users.user_1.uuid,
       bankAccountId: fixtures.bankAccounts.user_1_ba_try.uuid,
     })
   ).toStrictEqual(expectedTryBankAccountStats);
 
   expect(
-    await transactionRepository.getUserTransactionsExpensesGrouped({
+    await transactionsGetGroupedStatistics({
       userId: fixtures.users.user_2.uuid,
       bankAccountId: fixtures.bankAccounts.user_1_ba_try.uuid,
     })
@@ -203,14 +206,14 @@ test('transaction monthly stats - USD bank account', async () => {
   ]);
 
   expect(
-    await transactionRepository.getUserTransactionsExpensesGrouped({
+    await transactionsGetGroupedStatistics({
       userId: fixtures.users.user_1.uuid,
       bankAccountId: fixtures.bankAccounts.user_1_ba_usd.uuid,
     })
   ).toStrictEqual(expectedUsdBankAccountStats);
 
   expect(
-    await transactionRepository.getUserTransactionsExpensesGrouped({
+    await transactionsGetGroupedStatistics({
       userId: fixtures.users.user_2.uuid,
       bankAccountId: fixtures.bankAccounts.user_1_ba_usd.uuid,
     })
@@ -218,32 +221,30 @@ test('transaction monthly stats - USD bank account', async () => {
 });
 
 test('create manual transaction', async () => {
-  const transactionsBefore = await transactionRepository.getUserTransactionList(
-    {
-      userId: fixtures.users.user_1.uuid,
-      bankAccountShortId: fixtures.bankAccounts.user_1_ba_try.short,
-      pagination: {
-        page: 1,
-        perPage: 10,
-      },
-      filter: {
-        transactionType: UserTransactionListFilter.NoFilter,
-        dateFrom: DateTime.now().startOf('year').toJSDate(),
-        dateTo: DateTime.now().endOf('year').toJSDate(),
-        sortDirection: TransactionSortDirection.Desc,
-        sortField: TransactionSortField.Date,
-      },
-    }
-  );
+  const transactionsBefore = await transactionsGetForUser({
+    userId: fixtures.users.user_1.uuid,
+    bankAccountShortId: fixtures.bankAccounts.user_1_ba_try.short,
+    pagination: {
+      page: 1,
+      perPage: 10,
+    },
+    filter: {
+      transactionType: UserTransactionListFilter.NoFilter,
+      dateFrom: DateTime.now().startOf('year').toJSDate(),
+      dateTo: DateTime.now().endOf('year').toJSDate(),
+      sortDirection: TransactionSortDirection.Desc,
+      sortField: TransactionSortField.Date,
+    },
+  });
 
-  await transactionRepository.createManualTransaction({
+  await transactionCreateManual({
     bankAccountId: fixtures.bankAccounts.user_1_ba_try.uuid,
     title: 'Rent',
     currency: 'TRY',
     amount: 2700 * 1000,
   });
 
-  const transactionsAfter = await transactionRepository.getUserTransactionList({
+  const transactionsAfter = await transactionsGetForUser({
     userId: fixtures.users.user_1.uuid,
     bankAccountShortId: fixtures.bankAccounts.user_1_ba_try.short,
     pagination: {
@@ -266,7 +267,7 @@ test('create manual transaction', async () => {
 
 test('importTransaction applies import rules and does not touch non-matched transactions', async () => {
   const getLast10Transactions = () =>
-    transactionRepository.getUserTransactionList({
+    transactionsGetForUser({
       userId: fixtures.users.user_1.uuid,
       bankAccountShortId: fixtures.bankAccounts.user_1_ba_try.short,
       pagination: {
@@ -300,32 +301,29 @@ test('importTransaction applies import rules and does not touch non-matched tran
   const actualBeforeImport = (await getLast10Transactions()).items;
   expect(actualBeforeImport).toStrictEqual(expectedUsdBankAccountBeforeImport);
 
-  await transactionRepository.importTransactions(
-    fixtures.bankAccounts.user_1_ba_try.uuid,
-    [
-      {
-        createdAt: testNow.toJSDate(),
-        amount: -550,
-        currency: Currency.TRY,
-        title: 'Migros Buy',
-        info: 'Other',
-      },
-      {
-        createdAt: testNow.toJSDate(),
-        amount: -5550,
-        currency: Currency.TRY,
-        title: 'Digital Ocean',
-        info: 'Other',
-      },
-      {
-        createdAt: testNow.toJSDate(),
-        amount: -5550,
-        currency: Currency.TRY,
-        title: 'Payment for UK certificate',
-        info: 'Other',
-      },
-    ]
-  );
+  await transactionsImport(fixtures.bankAccounts.user_1_ba_try.uuid, [
+    {
+      createdAt: testNow.toJSDate(),
+      amount: -550,
+      currency: Currency.TRY,
+      title: 'Migros Buy',
+      info: 'Other',
+    },
+    {
+      createdAt: testNow.toJSDate(),
+      amount: -5550,
+      currency: Currency.TRY,
+      title: 'Digital Ocean',
+      info: 'Other',
+    },
+    {
+      createdAt: testNow.toJSDate(),
+      amount: -5550,
+      currency: Currency.TRY,
+      title: 'Payment for UK certificate',
+      info: 'Other',
+    },
+  ]);
 
   const expectedUsdBankAccountAfterImport = expect.arrayContaining([
     expect.objectContaining({

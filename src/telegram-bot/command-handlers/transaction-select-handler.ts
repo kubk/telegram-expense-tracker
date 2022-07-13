@@ -1,20 +1,24 @@
 import { Context, Markup } from 'telegraf';
-import { transactionRepository } from '../../container';
 import { assert } from 'ts-essentials';
 import { buildTransactionPageMenu } from '../menu-builders/build-transaction-page-menu';
 import { DateTime } from 'luxon';
 import { formatMoney } from '../format-money';
 import { Currency, Transaction } from '@prisma/client';
-import { getCurrencyAmountInUsd } from '../../currency-converter/get-currency-amount-in-usd';
 import { generateTransactionListLink } from '../menu-builders/generate-transaction-list-link';
 import { BotCallbackQuery } from '../bot-action';
+import { convertCurrency } from '../../currency-converter/convert-currency';
+import {
+  transactionGetByShortId,
+  transactionToggleCountable,
+  transactionToggleType,
+} from '../../repository/transaction-repository';
 
 const formatAsUsd = async (transaction: Transaction) => {
   switch (transaction.currency) {
     case Currency.EUR:
     case Currency.RUB:
     case Currency.TRY: {
-      const converted = await getCurrencyAmountInUsd(
+      const converted = await convertCurrency(
         transaction.currency,
         transaction.amount,
         DateTime.fromJSDate(transaction.createdAt)
@@ -49,15 +53,13 @@ export const transactionSelectHandler = async (ctx: Context) => {
   const transactionShortId = parseInt(transactionShortIdString);
 
   if (action === BotCallbackQuery.TransactionTypeToggle) {
-    await transactionRepository.toggleTransactionType(transactionShortId);
+    await transactionToggleType(transactionShortId);
   }
   if (action === BotCallbackQuery.TransactionIsCountableToggle) {
-    await transactionRepository.toggleTransactionCountable(transactionShortId);
+    await transactionToggleCountable(transactionShortId);
   }
 
-  const transaction = await transactionRepository.getTransactionByShortId(
-    transactionShortId
-  );
+  const transaction = await transactionGetByShortId(transactionShortId);
   assert(transaction);
   try {
     await ctx.deleteMessage();

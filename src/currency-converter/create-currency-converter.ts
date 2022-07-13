@@ -3,20 +3,18 @@ import { DateTime } from 'luxon';
 import { assert } from 'ts-essentials';
 import axios from 'axios';
 import { getEnvSafe } from '../lib/env/env';
-import { cache } from '../container';
+import { Cache } from 'cache-manager';
 
-export const getCurrencyAmountInUsd = async (
-  from: Currency,
-  amountSafe: number,
-  date: DateTime
-) => {
-  const rate = await cache.wrap(`${from}:${date.toFormat('yyyy-MM')}`, () => {
-    return getCurrencyToUsdHistoricalRate(from, amountSafe, date);
-  });
+export const createCurrencyConverter = (cache: Cache) => {
+  return async (from: Currency, amountSafe: number, date: DateTime) => {
+    const rate = await cache.wrap(`${from}:${date.toFormat('yyyy-MM')}`, () => {
+      return getCurrencyToUsdHistoricalRate(from, amountSafe, date);
+    });
 
-  return {
-    currency: Currency.USD,
-    amount: amountSafe * parseFloat(rate),
+    return {
+      currency: Currency.USD,
+      amount: amountSafe * parseFloat(rate),
+    };
   };
 };
 
@@ -42,7 +40,9 @@ const getCurrencyToUsdHistoricalRate = async (
         },
       }
     )
-    .then((response) => response.data);
+    .then((response) => {
+      return response.data;
+    });
 
   return result['rates']['USD']['rate'];
 };

@@ -1,8 +1,8 @@
 import { existsSync, readFileSync } from 'fs';
 import { parseTransactions } from './parse-transactions';
-import { transactionRepository } from '../../container';
 import { fixtures, useRefreshDb } from '../../fixtures/use-refresh-db';
 import { testIf } from '../../lib/jest/test-if';
+import { transactionsImport } from '../../repository/transaction-repository';
 
 useRefreshDb();
 
@@ -15,15 +15,15 @@ testIf(
     const result = await parseTransactions(dataBuffer);
     const bankAccountId = fixtures.bankAccounts.user_1_ba_usd.uuid;
 
-    const importTransactions = () => {
-      return transactionRepository.importTransactions(bankAccountId, result);
+    const importTransactionsWithArgs = () => {
+      return transactionsImport(bankAccountId, result);
     };
 
-    const firstResult = await importTransactions();
+    const firstResult = await importTransactionsWithArgs();
 
     expect(firstResult).toStrictEqual({ added: result.length, removed: 0 });
 
-    const secondResult = await importTransactions();
+    const secondResult = await importTransactionsWithArgs();
 
     expect(secondResult).toStrictEqual({
       added: result.length,

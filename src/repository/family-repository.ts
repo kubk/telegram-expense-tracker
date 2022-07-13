@@ -1,15 +1,13 @@
-import { prisma } from '../container';
+import { prisma } from '../db/prisma';
 
-export class FamilyRepository {
-  getFamilyListWithUsersAndProfiles() {
-    return prisma.family.findMany({
-      include: {
-        users: {
-          include: {
-            telegramProfile: true,
-          },
+export const familyListGetWithUsersAndProfiles = () => {
+  return prisma.family.findMany({
+    include: {
+      users: {
+        include: {
+          telegramProfile: true,
         },
       },
-    });
-  }
-}
+    },
+  });
+};

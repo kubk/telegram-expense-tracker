@@ -1,11 +1,6 @@
 import { Context, Markup } from 'telegraf';
 import { assert } from 'ts-essentials';
 import {
-  bankRepository,
-  transactionRepository,
-  userRepository,
-} from '../../container';
-import {
   isAddingBankAccountCurrencyState,
   isAddingBankAccountNameState,
   isAddingTransactionAmountState,
@@ -18,14 +13,24 @@ import { buildBankAccountListMenu } from '../menu-builders/build-bank-account-li
 import { isNumber } from '../../lib/validaton/is-number';
 import { buildBankAccountMenu } from '../menu-builders/build-bank-account-menu';
 import { withCancelText } from '../with-cancel-text';
-import { TransactionType } from '../../repository/transaction-repository';
-import { getBankAccountById } from '../../repository/bank-account-repository';
+import {
+  transactionCreateManual,
+  TransactionType,
+} from '../../repository/transaction-repository';
+import {
+  bankAccountGetById,
+  bankAccountCreate,
+  bankAccountGetMostUsedTransactionTitles,
+  bankAccountGetForUser,
+} from '../../repository/bank-account-repository';
+import {
+  userGetByTelegramIdOrThrow,
+  userSetState,
+} from '../../repository/user-repository';
 
 export const textHandler = async (ctx: Context) => {
   assert(ctx.message);
-  const user = await userRepository.getUserByTelegramIdOrThrow(
-    ctx.message.from.id
-  );
+  const user = await userGetByTelegramIdOrThrow(ctx.message.from.id);
   const { state } = user.telegramProfile;
 
   if (isInitialState(state)) {
@@ -35,7 +40,7 @@ export const textHandler = async (ctx: Context) => {
   }
   if (isAddingBankAccountNameState(state)) {
     assert('text' in ctx.message);
-    await userRepository.setUserState(user.telegramProfile.id, {
+    await userSetState(user.telegramProfile.id, {
       type: 'addingBankAccountCurrency',
       bankAccountName: ctx.message.text,
     });
@@ -47,15 +52,15 @@ export const textHandler = async (ctx: Context) => {
       await ctx.reply('Please enter either TRY or USD');
       return;
     }
-    await bankRepository.createBankAccount({
+    await bankAccountCreate({
       currency: ctx.message.text,
       name: state.bankAccountName,
       familyId: user.family.id,
     });
-    await userRepository.setUserState(user.telegramProfile.id, {
+    await userSetState(user.telegramProfile.id, {
       type: 'initial',
     });
-    const bankAccounts = await bankRepository.getUserBankAccounts(user.id);
+    const bankAccounts = await bankAccountGetForUser(user.id);
     await ctx.reply(
       `Hello 👋\nThis is a Telegram bot to track your expenses`,
       Markup.inlineKeyboard(buildBankAccountListMenu(bankAccounts))
@@ -74,16 +79,15 @@ export const textHandler = async (ctx: Context) => {
         ? -1 * amountWithoutSign
         : amountWithoutSign;
 
-    await userRepository.setUserState(user.telegramProfile.id, {
+    await userSetState(user.telegramProfile.id, {
       type: 'addingTransactionTitle',
       bankAccountId: state.bankAccountId,
       amount: amountWithSign,
     });
-    const topTransactionTitles =
-      await bankRepository.getMostUsedTransactionTitles(
-        state.bankAccountId,
-        state.transactionType
-      );
+    const topTransactionTitles = await bankAccountGetMostUsedTransactionTitles(
+      state.bankAccountId,
+      state.transactionType
+    );
 
     const text = withCancelText(`Please type or select transaction title`);
     if (topTransactionTitles.length) {
@@ -99,15 +103,15 @@ export const textHandler = async (ctx: Context) => {
   }
 
   if (isAddingTransactionTitleState(state)) {
-    const bankAccount = await getBankAccountById(state.bankAccountId);
+    const bankAccount = await bankAccountGetById(state.bankAccountId);
     assert('text' in ctx.message);
-    await transactionRepository.createManualTransaction({
+    await transactionCreateManual({
       bankAccountId: bankAccount.id,
       title: ctx.message.text,
       currency: bankAccount.currency,
       amount: state.amount,
     });
-    await userRepository.setUserState(user.telegramProfile.id, {
+    await userSetState(user.telegramProfile.id, {
       type: 'initial',
     });
     await ctx.reply('Done!', Markup.removeKeyboard());

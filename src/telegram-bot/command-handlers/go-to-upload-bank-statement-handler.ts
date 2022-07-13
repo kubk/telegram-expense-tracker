@@ -1,7 +1,10 @@
 import { assert } from 'ts-essentials';
-import { userRepository } from '../../container';
 import { withCancelText } from '../with-cancel-text';
 import { Context } from 'telegraf';
+import {
+  userGetByTelegramIdOrThrow,
+  userSetState,
+} from '../../repository/user-repository';
 
 export const goToUploadBankStatementHandler = async (ctx: Context) => {
   const bankAccountShortIdString = (ctx as any).match[1];
@@ -11,11 +14,9 @@ export const goToUploadBankStatementHandler = async (ctx: Context) => {
 
   const bankAccountShortId = parseInt(bankAccountShortIdString);
   assert(ctx.callbackQuery);
-  const user = await userRepository.getUserByTelegramIdOrThrow(
-    ctx.callbackQuery.from.id
-  );
+  const user = await userGetByTelegramIdOrThrow(ctx.callbackQuery.from.id);
 
-  await userRepository.setUserState(user.telegramProfile.id, {
+  await userSetState(user.telegramProfile.id, {
     type: 'uploadingBankStatement',
     bankAccountShortId,
   });

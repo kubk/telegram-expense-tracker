@@ -13,6 +13,10 @@ test('apply rules', () => {
       expected: { title: 'Migros', isCountable: true },
     },
     {
+      transaction: { title: 'POS WATSONS-276-ALANYUM', isCountable: true },
+      expected: { title: 'WATSONS-276-ALANYUM', isCountable: true },
+    },
+    {
       transaction: { title: 'Migros', isCountable: true },
       expected: { title: 'Migros', isCountable: true },
     },
@@ -44,7 +48,7 @@ test('apply rules', () => {
 
   const importRules: TransactionImportRule[] = [
     {
-      name: '^POS TSMZ ',
+      name: '^POS (TSMZ )?',
       bankAccountId: '2fd204fa-c446-4c24-8166-70677f3069e4',
       type: TransactionImportRuleType.FilterTransactionName,
     },

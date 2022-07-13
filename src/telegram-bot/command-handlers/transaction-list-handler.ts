@@ -2,18 +2,16 @@ import { Context } from 'telegraf';
 import { isNumber } from '../../lib/validaton/is-number';
 import { isValidEnumValue } from '../../lib/typescript/is-valid-enum-value';
 import {
+  transactionsGetForUser,
   TransactionSortDirection,
   TransactionSortField,
   UserTransactionListFilter,
 } from '../../repository/transaction-repository';
 import { getDateRangeFromMonth } from '../../lib/date/get-date-range';
 import { assert } from 'ts-essentials';
-import {
-  bankRepository,
-  transactionRepository,
-  userRepository,
-} from '../../container';
 import { buildTransactionPaginatedResult } from '../menu-builders/build-transactions-paginated-menu';
+import { bankAccountGetByShortId } from '../../repository/bank-account-repository';
+import { userGetByTelegramIdOrThrow } from '../../repository/user-repository';
 
 const getDateFilter = (year: string, groupNumber: string) => {
   return getDateRangeFromMonth(parseInt(year), parseInt(groupNumber));
@@ -44,12 +42,10 @@ export const transactionListHandler = async (ctx: Context) => {
   const dateFilter = getDateFilter(year, groupNumber);
 
   assert(ctx.callbackQuery);
-  const user = await userRepository.getUserByTelegramIdOrThrow(
-    ctx.callbackQuery.from.id
-  );
+  const user = await userGetByTelegramIdOrThrow(ctx.callbackQuery.from.id);
 
   const bankAccountShortId = parseInt(bankAccountShortIdString);
-  const result = await transactionRepository.getUserTransactionList({
+  const result = await transactionsGetForUser({
     userId: user.id,
     bankAccountShortId: bankAccountShortId,
     filter: {
@@ -65,9 +61,7 @@ export const transactionListHandler = async (ctx: Context) => {
     },
   });
 
-  const bankAccount = await bankRepository.getBankAccountByShortId(
-    bankAccountShortId
-  );
+  const bankAccount = await bankAccountGetByShortId(bankAccountShortId);
 
   await ctx.editMessageReplyMarkup({
     inline_keyboard: buildTransactionPaginatedResult({

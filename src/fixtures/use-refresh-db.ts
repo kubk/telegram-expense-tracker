@@ -1,10 +1,10 @@
-import { prisma } from '../container';
 import {
   Currency,
   TransactionImportRuleType,
   TransactionSource,
 } from '@prisma/client';
 import { DateTime } from 'luxon';
+import { prisma } from '../db/prisma';
 import { getEnvSafe } from '../lib/env/env';
 
 jest.setTimeout(10000);

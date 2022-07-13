@@ -1,9 +1,13 @@
 import { Context, Markup } from 'telegraf';
-import { bankRepository, userRepository } from '../../container';
 import { assert } from 'ts-essentials';
 import { BotCallbackQuery } from '../bot-action';
 import { withCancelText } from '../with-cancel-text';
 import { TransactionType } from '../../repository/transaction-repository';
+import { bankAccountGetByShortId } from '../../repository/bank-account-repository';
+import {
+  userGetByTelegramIdOrThrow,
+  userSetState,
+} from '../../repository/user-repository';
 
 const createTransactionTypeSelectMenu = () => {
   return [
@@ -27,21 +31,17 @@ export const transactionAddManualSelectTypeHandler = async (ctx: Context) => {
   }
 
   const bankAccountId = parseInt(bankAccountShortIdString);
-  const bankAccount = await bankRepository.getBankAccountByShortId(
-    bankAccountId
-  );
+  const bankAccount = await bankAccountGetByShortId(bankAccountId);
   assert(ctx.callbackQuery);
 
-  const user = await userRepository.getUserByTelegramIdOrThrow(
-    ctx.callbackQuery.from.id
-  );
+  const user = await userGetByTelegramIdOrThrow(ctx.callbackQuery.from.id);
 
   await ctx.reply(
     withCancelText(`Please select transaction type`),
     Markup.inlineKeyboard(createTransactionTypeSelectMenu())
   );
 
-  await userRepository.setUserState(user.telegramProfile.id, {
+  await userSetState(user.telegramProfile.id, {
     type: 'addingTransactionType',
     bankAccountId: bankAccount.id,
   });
