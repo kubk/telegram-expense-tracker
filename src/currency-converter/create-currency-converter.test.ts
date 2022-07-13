@@ -13,16 +13,19 @@ test('get currency amount in usd', async () => {
   // @ts-ignore
   axios.get.mockResolvedValue({ data: { rates: { USD: { rate: 0.057 } } } });
 
+  let usedCacheKey: string | undefined;
   const cacheMock = {
     wrap(key: string, notFoundCallback: () => string) {
+      usedCacheKey = key;
       return Promise.resolve(notFoundCallback());
     },
   } as Cache;
 
   const convertCurrency = createCurrencyConverter(cacheMock);
-  const timeMock = DateTime.fromISO('2022-04-05');
+  const result1 = await convertCurrency(Currency.TRY, 20 * 100, DateTime.fromISO('2022-04-05'));
+  expect((result1.amount / 100).toFixed(1)).toBe('1.1');
+  expect(usedCacheKey).toBe('TRY:2022-04-05')
 
-  const result = await convertCurrency(Currency.TRY, 20 * 100, timeMock);
-
-  expect((result.amount / 100).toFixed(1)).toBe('1.1');
+  await convertCurrency(Currency.TRY, 20 * 100, DateTime.fromISO('2022-04-06'));
+  expect(usedCacheKey).toBe('TRY:2022-04-06')
 });
