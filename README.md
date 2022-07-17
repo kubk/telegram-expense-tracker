@@ -8,7 +8,8 @@ A Telegram bot for tracking expenses. The goal is to create a unified way to tra
 - Montly and weekly expense / income statistics
 - Allow to exclude specific transactions from statistics. Example use case - your friends asked you to pay for something online and then returned you this amount in cash or in crypto. You don't want to count this transaction as a spending. Another use case - you'd like to exclude all the cash withdrawals from the statistics because they're not spendings.
 - Parsing bank statements (currently only for Yapı Kredi Bankası, but other banks can be added)
-- Manual transacton entries for tracking cash 
+- Manual transacton entries for tracking cash
+- Automatic transaction labelling via regex-based import rules.
 - Smooth app-like bot experience using [editMessageReplyMarkup](https://core.telegram.org/bots/api#editmessagereplymarkup)
 
 ### Screenshots
