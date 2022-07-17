@@ -44,6 +44,10 @@ test('apply rules', () => {
       transaction: { title: 'Other text ATM Test', isCountable: true },
       expected: { isCountable: true, title: 'Other text ATM Test' },
     },
+    {
+      transaction: { title: 'Para Çekme', isCountable: true },
+      expected: { isCountable: false, title: 'Para Çekme' },
+    },
   ] as const;
 
   const importRules: TransactionImportRule[] = [
@@ -62,6 +66,11 @@ test('apply rules', () => {
       bankAccountId: '2fd204fa-c446-4c24-8166-70677f3069e4',
       type: TransactionImportRuleType.MakeUncountable,
     },
+    {
+      name: 'Para [^\\s]+',
+      bankAccountId: '2fd204fa-c446-4c24-8166-70677f3069e4',
+      type: TransactionImportRuleType.MakeUncountable,
+    }
   ];
 
   table.forEach((row) => {
