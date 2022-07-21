@@ -63,7 +63,7 @@ stateDiagram-v2
     msl --> bas: Back
     msl --> msl: Change page
     msl --> mss: Select month
-    mss --> tf: Go to filters
+    mss --> tf: Open filters
     tf --> tf: Change source filter
     tf --> tf: Change is countable filter
     tf --> mss: Apply filters
