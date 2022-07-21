@@ -29,7 +29,7 @@ export const buildTransactionFilterMenu = (
   return [
     transactionSourceFilterButtons.map((button) => {
       return Markup.button.callback(
-        `${button.text} ${filters.filterSource === button.filter ? '✅' : ''}`,
+        `${filters.filterSource === button.filter ? '✅ ' : ''}${button.text} `,
         generateTransactionListLink({
           ...linkParamsWithoutFilters,
           filters: {
@@ -41,8 +41,8 @@ export const buildTransactionFilterMenu = (
     }),
     transactionIsCountableFilterButtons.map((button) => {
       return Markup.button.callback(
-        `${button.text} ${
-          filters.filterCountable === button.filter ? '✅' : ''
+        `${filters.filterCountable === button.filter ? '✅ ' : ''}${
+          button.text
         }`,
         generateTransactionListLink({
           ...linkParamsWithoutFilters,
