@@ -70,7 +70,7 @@ test('apply rules', () => {
       name: 'Para [^\\s]+',
       bankAccountId: '2fd204fa-c446-4c24-8166-70677f3069e4',
       type: TransactionImportRuleType.MakeUncountable,
-    }
+    },
   ];
 
   table.forEach((row) => {

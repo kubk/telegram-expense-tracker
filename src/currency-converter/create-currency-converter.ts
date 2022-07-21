@@ -7,9 +7,12 @@ import { Cache } from 'cache-manager';
 
 export const createCurrencyConverter = (cache: Cache) => {
   return async (from: Currency, amountSafe: number, date: DateTime) => {
-    const rate = await cache.wrap(`${from}:${date.toFormat('yyyy-MM-dd')}`, () => {
-      return getCurrencyToUsdHistoricalRate(from, amountSafe, date);
-    });
+    const rate = await cache.wrap(
+      `${from}:${date.toFormat('yyyy-MM-dd')}`,
+      () => {
+        return getCurrencyToUsdHistoricalRate(from, amountSafe, date);
+      }
+    );
 
     return {
       currency: Currency.USD,

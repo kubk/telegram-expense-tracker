@@ -1,4 +1,6 @@
 import {
+  FilterTransactionIsCountable,
+  FilterTransactionSource,
   TransactionSortDirection,
   TransactionSortField,
   UserTransactionExpenseRowItem,
@@ -7,7 +9,19 @@ import {
 import { BankAccount } from '@prisma/client';
 import { Markup } from 'telegraf';
 import { formatMoney } from '../format-money';
-import { generateTransactionListLink } from './generate-transaction-list-link';
+import {
+  FilterTransactionState,
+  generateTransactionListLink,
+} from './generate-transaction-list-link';
+
+const getDefaultFilters = (transactionType: UserTransactionListFilter) => {
+  return {
+    transactionType,
+    filterCountable: FilterTransactionIsCountable.All,
+    filterSource: FilterTransactionSource.All,
+    filterState: FilterTransactionState.Applied,
+  };
+};
 
 export const buildStatisticGridMenu = (
   row: UserTransactionExpenseRowItem,
@@ -26,7 +40,7 @@ export const buildStatisticGridMenu = (
         bankAccountShortId: bankAccount.shortId,
         groupYear: row.groupyear,
         groupNumber: row.groupnumber,
-        filter: UserTransactionListFilter.NoFilter,
+        filters: getDefaultFilters(UserTransactionListFilter.NoFilter),
         sortField: TransactionSortField.Date,
         sortDirection: TransactionSortDirection.Desc,
         page,
@@ -38,7 +52,7 @@ export const buildStatisticGridMenu = (
         bankAccountShortId: bankAccount.shortId,
         groupYear: row.groupyear,
         groupNumber: row.groupnumber,
-        filter: UserTransactionListFilter.OnlyIncome,
+        filters: getDefaultFilters(UserTransactionListFilter.OnlyIncome),
         sortField: TransactionSortField.Date,
         sortDirection: TransactionSortDirection.Desc,
         page,
@@ -50,7 +64,7 @@ export const buildStatisticGridMenu = (
         bankAccountShortId: bankAccount.shortId,
         groupYear: row.groupyear,
         groupNumber: row.groupnumber,
-        filter: UserTransactionListFilter.OnlyOutcome,
+        filters: getDefaultFilters(UserTransactionListFilter.OnlyOutcome),
         sortField: TransactionSortField.Date,
         sortDirection: TransactionSortDirection.Desc,
         page,

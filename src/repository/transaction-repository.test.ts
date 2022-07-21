@@ -1,5 +1,7 @@
 import { fixtures, testNow, useRefreshDb } from '../fixtures/use-refresh-db';
 import {
+  FilterTransactionIsCountable,
+  FilterTransactionSource,
   transactionCreateManual,
   transactionsGetForUser,
   transactionsGetGroupedStatistics,
@@ -22,6 +24,8 @@ test('transaction list for user and ba', async () => {
       perPage: 10,
     },
     filter: {
+      filterSource: FilterTransactionSource.All,
+      filterCountable: FilterTransactionIsCountable.All,
       transactionType: UserTransactionListFilter.NoFilter,
       dateFrom: DateTime.now().startOf('year').toJSDate(),
       dateTo: DateTime.now().endOf('year').toJSDate(),
@@ -39,6 +43,8 @@ test('transaction list for user and ba', async () => {
       perPage: 10,
     },
     filter: {
+      filterSource: FilterTransactionSource.All,
+      filterCountable: FilterTransactionIsCountable.All,
       transactionType: UserTransactionListFilter.NoFilter,
       dateFrom: DateTime.now().startOf('year').toJSDate(),
       dateTo: DateTime.now().endOf('year').toJSDate(),
@@ -56,6 +62,8 @@ test('transaction list for user and ba', async () => {
       perPage: 10,
     },
     filter: {
+      filterSource: FilterTransactionSource.All,
+      filterCountable: FilterTransactionIsCountable.All,
       transactionType: UserTransactionListFilter.NoFilter,
       dateFrom: DateTime.now().startOf('year').toJSDate(),
       dateTo: DateTime.now().endOf('year').toJSDate(),
@@ -73,6 +81,8 @@ test('transaction list for user and ba', async () => {
       perPage: 10,
     },
     filter: {
+      filterSource: FilterTransactionSource.All,
+      filterCountable: FilterTransactionIsCountable.All,
       transactionType: UserTransactionListFilter.OnlyOutcome,
       dateFrom: DateTime.now().startOf('year').toJSDate(),
       dateTo: DateTime.now().endOf('year').toJSDate(),
@@ -90,6 +100,8 @@ test('transaction list for user and ba', async () => {
       perPage: 10,
     },
     filter: {
+      filterSource: FilterTransactionSource.All,
+      filterCountable: FilterTransactionIsCountable.All,
       transactionType: UserTransactionListFilter.OnlyIncome,
       dateFrom: DateTime.now().startOf('year').toJSDate(),
       dateTo: DateTime.now().endOf('year').toJSDate(),
@@ -109,6 +121,8 @@ test('transactions pagination', async () => {
       perPage: 2,
     },
     filter: {
+      filterSource: FilterTransactionSource.All,
+      filterCountable: FilterTransactionIsCountable.All,
       transactionType: UserTransactionListFilter.NoFilter,
       dateFrom: DateTime.now().startOf('year').toJSDate(),
       dateTo: DateTime.now().endOf('year').toJSDate(),
@@ -131,6 +145,8 @@ test('transactions pagination', async () => {
       perPage: 2,
     },
     filter: {
+      filterSource: FilterTransactionSource.All,
+      filterCountable: FilterTransactionIsCountable.All,
       transactionType: UserTransactionListFilter.NoFilter,
       dateFrom: DateTime.now().startOf('year').toJSDate(),
       dateTo: DateTime.now().endOf('year').toJSDate(),
@@ -229,6 +245,8 @@ test('create manual transaction', async () => {
       perPage: 10,
     },
     filter: {
+      filterSource: FilterTransactionSource.All,
+      filterCountable: FilterTransactionIsCountable.All,
       transactionType: UserTransactionListFilter.NoFilter,
       dateFrom: DateTime.now().startOf('year').toJSDate(),
       dateTo: DateTime.now().endOf('year').toJSDate(),
@@ -252,6 +270,8 @@ test('create manual transaction', async () => {
       perPage: 10,
     },
     filter: {
+      filterSource: FilterTransactionSource.All,
+      filterCountable: FilterTransactionIsCountable.All,
       transactionType: UserTransactionListFilter.NoFilter,
       dateFrom: DateTime.now().startOf('year').toJSDate(),
       dateTo: DateTime.now().endOf('year').toJSDate(),
@@ -275,6 +295,8 @@ test('importTransaction applies import rules and does not touch non-matched tran
         perPage: 10,
       },
       filter: {
+        filterSource: FilterTransactionSource.All,
+        filterCountable: FilterTransactionIsCountable.All,
         transactionType: UserTransactionListFilter.NoFilter,
         dateFrom: DateTime.now().startOf('year').toJSDate(),
         dateTo: DateTime.now().endOf('year').toJSDate(),
