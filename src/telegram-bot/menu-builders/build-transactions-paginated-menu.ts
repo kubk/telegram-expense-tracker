@@ -2,15 +2,20 @@ import { BankAccount, Transaction, TransactionSource } from '@prisma/client';
 import { Markup } from 'telegraf';
 import { BotButtons, BotCallbackQuery } from '../bot-action';
 import {
+  FilterTransactionIsCountable,
+  FilterTransactionSource,
   TransactionSortDirection,
   TransactionSortField,
-  UserTransactionListFilter,
 } from '../../repository/transaction-repository';
 import { formatMoney } from '../format-money';
 import { UnreachableCaseError } from 'ts-essentials';
 import { PaginatedResult } from '../../lib/pagination/pagination';
 import { boolNarrow } from '../../lib/typescript/bool-narrow';
-import { generateTransactionListLink } from './generate-transaction-list-link';
+import {
+  FilterTransactionState,
+  generateTransactionListLink,
+  TransactionFilters,
+} from './generate-transaction-list-link';
 
 const getTransactionSourceIcon = (transactionSource: TransactionSource) => {
   switch (transactionSource) {
@@ -49,12 +54,23 @@ const getOppositeDirection = (direction: TransactionSortDirection) => {
   }
 };
 
+const getAppliedFiltersCount = (filters: TransactionFilters) => {
+  let count = 0;
+  if (filters.filterCountable !== FilterTransactionIsCountable.All) {
+    count++;
+  }
+  if (filters.filterSource !== FilterTransactionSource.All) {
+    count++;
+  }
+  return count;
+};
+
 export const buildTransactionPaginatedResult = (options: {
   transactionsPaginated: PaginatedResult<Transaction>;
   bankAccount: Pick<BankAccount, 'id' | 'shortId' | 'currency'>;
   groupYear: number;
   groupNumber: number;
-  filter: UserTransactionListFilter;
+  filters: TransactionFilters;
   sortDirection: TransactionSortDirection;
   sortField: TransactionSortField;
 }) => {
@@ -63,12 +79,12 @@ export const buildTransactionPaginatedResult = (options: {
     bankAccount,
     groupNumber,
     groupYear,
-    filter,
+    filters,
     sortDirection,
     sortField,
   } = options;
 
-  const bankAccountIdShortened = bankAccount.shortId;
+  const bankAccountShortId = bankAccount.shortId;
 
   const sortButtons = [
     {
@@ -84,23 +100,41 @@ export const buildTransactionPaginatedResult = (options: {
   ];
 
   return [
-    sortButtons.map(({ text, field, defaultDirection }) =>
-      Markup.button.callback(
-        `${text} ${sortField === field ? getSortIcon(sortDirection) : ''}️`,
-        generateTransactionListLink({
-          bankAccountShortId: bankAccountIdShortened,
-          groupYear,
-          groupNumber,
-          filter,
-          sortField: field,
-          sortDirection:
-            sortField === field
-              ? getOppositeDirection(sortDirection)
-              : defaultDirection,
-          page: 1,
-        })
+    sortButtons
+      .map(({ text, field, defaultDirection }) =>
+        Markup.button.callback(
+          `${text} ${sortField === field ? getSortIcon(sortDirection) : ''}️`,
+          generateTransactionListLink({
+            bankAccountShortId,
+            groupYear,
+            groupNumber,
+            filters,
+            sortField: field,
+            sortDirection:
+              sortField === field
+                ? getOppositeDirection(sortDirection)
+                : defaultDirection,
+            page: 1,
+          })
+        )
       )
-    ),
+      .concat(
+        Markup.button.callback(
+          `Filters (${getAppliedFiltersCount(filters)})`,
+          generateTransactionListLink({
+            bankAccountShortId,
+            groupYear,
+            groupNumber,
+            filters: {
+              ...filters,
+              filterState: FilterTransactionState.Changing,
+            },
+            sortField,
+            sortDirection,
+            page: 1,
+          })
+        )
+      ),
     ...transactionsPaginated.items.map((transaction) => {
       const money = formatMoney({
         amount: transaction.amount,
@@ -116,10 +150,10 @@ export const buildTransactionPaginatedResult = (options: {
           `${BotCallbackQuery.TransactionSelect}:${
             transaction.shortId
           }:${generateTransactionListLink({
-            bankAccountShortId: bankAccountIdShortened,
+            bankAccountShortId: bankAccountShortId,
             groupYear,
             groupNumber,
-            filter,
+            filters,
             sortField,
             sortDirection,
             page: transactionsPaginated.currentPage,
@@ -132,10 +166,10 @@ export const buildTransactionPaginatedResult = (options: {
         ? Markup.button.callback(
             `← Page ${transactionsPaginated.previousPage} / ${transactionsPaginated.totalPages}`,
             generateTransactionListLink({
-              bankAccountShortId: bankAccountIdShortened,
+              bankAccountShortId: bankAccountShortId,
               groupYear,
               groupNumber,
-              filter,
+              filters,
               sortField,
               sortDirection,
               page: transactionsPaginated.previousPage,
@@ -146,10 +180,10 @@ export const buildTransactionPaginatedResult = (options: {
         ? Markup.button.callback(
             `Page ${transactionsPaginated.nextPage} / ${transactionsPaginated.totalPages} →`,
             generateTransactionListLink({
-              bankAccountShortId: bankAccountIdShortened,
+              bankAccountShortId: bankAccountShortId,
               groupYear,
               groupNumber,
-              filter,
+              filters,
               sortField,
               sortDirection,
               page: transactionsPaginated.nextPage,

@@ -36,7 +36,7 @@ bot.action(
 );
 bot.action(
   new RegExp(
-    `${BotCallbackQuery.TransactionSelect}:(.+):(.+):(\\d{4}):(\\d+):(.+):(.+):(.+):(\\d+):?(.*)`
+    `${BotCallbackQuery.TransactionSelect}:(.+):(.+):(\\d{4}):(\\d+):(.+):(.+):(.+):(.+):(.+):(.+):(\\d+):?(.*)`
   ),
   transactionSelectHandler
 );
@@ -59,7 +59,7 @@ bot.action(
   statsMonthHandler
 );
 bot.action(
-  new RegExp(`(.+):(\\d{4}):(\\d+):(.+):(.+):(.+):(.+)`),
+  new RegExp(`(.+):(\\d{4}):(\\d+):(.+):(.+):(.+):(.+):(.+):(.+):(.+)`),
   transactionListHandler
 );
 bot.action(

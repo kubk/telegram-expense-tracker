@@ -47,6 +47,18 @@ export enum TransactionSortField {
   Amount = 'a',
 }
 
+export enum FilterTransactionSource {
+  Manual = 'm',
+  Imported = 'i',
+  All = 'a',
+}
+
+export enum FilterTransactionIsCountable {
+  Countable = 'c',
+  Uncountable = 'u',
+  All = 'a',
+}
+
 export const transactionsGetGroupedStatistics = async (options: {
   userId: string;
   bankAccountId: string;
@@ -95,22 +107,32 @@ export const transactionsGetGroupedStatistics = async (options: {
 };
 
 export const transactionsGetForUser = async (options: {
-  userId: string;
-  bankAccountShortId: number;
-  pagination: CalcPaginationParams;
   filter: {
-    dateFrom: Date;
-    dateTo: Date;
     transactionType: UserTransactionListFilter;
     sortDirection: TransactionSortDirection;
+    filterCountable: FilterTransactionIsCountable;
+    filterSource: FilterTransactionSource;
+    dateTo: Date;
     sortField: TransactionSortField;
+    dateFrom: Date;
   };
+  pagination: CalcPaginationParams;
+  bankAccountShortId: number;
+  userId: string;
 }) => {
   const {
     userId,
     bankAccountShortId,
     pagination,
-    filter: { dateFrom, dateTo, transactionType, sortDirection, sortField },
+    filter: {
+      dateFrom,
+      dateTo,
+      transactionType,
+      sortDirection,
+      sortField,
+      filterSource,
+      filterCountable,
+    },
   } = options;
   const { page } = pagination;
   const { offset, perPage } = calcPaginationOffset(pagination);
@@ -125,6 +147,32 @@ export const transactionsGetForUser = async (options: {
         return Prisma.sql`and t.amount < 0`;
       default:
         throw new UnreachableCaseError(transactionType);
+    }
+  })();
+
+  const filterSourceSql = (() => {
+    switch (filterSource) {
+      case FilterTransactionSource.All:
+        return Prisma.empty;
+      case FilterTransactionSource.Imported:
+        return Prisma.sql`and t.source = ${TransactionSource.IMPORTED}`;
+      case FilterTransactionSource.Manual:
+        return Prisma.sql`and t.source = ${TransactionSource.MANUAL}`;
+      default:
+        throw new UnreachableCaseError(filterSource);
+    }
+  })();
+
+  const filterCountableSql = (() => {
+    switch (filterCountable) {
+      case FilterTransactionIsCountable.All:
+        return Prisma.empty;
+      case FilterTransactionIsCountable.Countable:
+        return Prisma.sql`and t."isCountable" = true`;
+      case FilterTransactionIsCountable.Uncountable:
+        return Prisma.sql`and t."isCountable" = false`;
+      default:
+        throw new UnreachableCaseError(filterCountable);
     }
   })();
 
@@ -159,7 +207,7 @@ export const transactionsGetForUser = async (options: {
           left join "BankAccount" ba on "Family".id = ba."familyId"
           left join "Transaction" t on ba.id = t."bankAccountId"
         where u.id = ${userId}
-          and ba."shortId" = ${bankAccountShortId} ${filterTypeSql}
+          and ba."shortId" = ${bankAccountShortId} ${filterTypeSql} ${filterSourceSql} ${filterCountableSql}
           and t."createdAt" between ${dateFrom}
           and ${dateTo}
       `,
@@ -170,7 +218,7 @@ export const transactionsGetForUser = async (options: {
                left join "BankAccount" ba on "Family".id = ba."familyId"
                left join "Transaction" t on ba.id = t."bankAccountId"
         where u.id = ${userId}
-          and ba."shortId" = ${bankAccountShortId} ${filterTypeSql}
+          and ba."shortId" = ${bankAccountShortId} ${filterTypeSql} ${filterSourceSql} ${filterCountableSql}
           and t."createdAt" between ${dateFrom}
           and ${dateTo}
         order by ${sortFieldSql} ${sortDirectionSql}

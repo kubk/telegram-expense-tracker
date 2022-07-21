@@ -4,14 +4,24 @@ import { buildTransactionPageMenu } from '../menu-builders/build-transaction-pag
 import { DateTime } from 'luxon';
 import { formatMoney } from '../format-money';
 import { Currency, Transaction } from '@prisma/client';
-import { generateTransactionListLink } from '../menu-builders/generate-transaction-list-link';
+import {
+  FilterTransactionState,
+  generateTransactionListLink,
+} from '../menu-builders/generate-transaction-list-link';
 import { BotCallbackQuery } from '../bot-action';
 import { convertCurrency } from '../../currency-converter/convert-currency';
 import {
+  FilterTransactionIsCountable,
+  FilterTransactionSource,
   transactionGetByShortId,
+  TransactionSortDirection,
+  TransactionSortField,
   transactionToggleCountable,
   transactionToggleType,
+  UserTransactionListFilter,
 } from '../../repository/transaction-repository';
+import { isNumber } from '../../lib/validaton/is-number';
+import { isValidEnumValue } from '../../lib/typescript/is-valid-enum-value';
 
 const formatAsUsd = async (transaction: Transaction) => {
   switch (transaction.currency) {
@@ -43,9 +53,13 @@ export const transactionSelectHandler = async (ctx: Context) => {
     transactionType,
     sortField,
     sortDirection,
+    filterState,
+    filterSource,
+    filterCountable,
     pageString,
     action,
   ] = (ctx as any).match;
+  const page = parseInt(pageString);
 
   if (!transactionShortIdString) {
     return;
@@ -57,6 +71,18 @@ export const transactionSelectHandler = async (ctx: Context) => {
   }
   if (action === BotCallbackQuery.TransactionIsCountableToggle) {
     await transactionToggleCountable(transactionShortId);
+  }
+
+  if (
+    !isNumber(page) ||
+    !isValidEnumValue(transactionType, UserTransactionListFilter) ||
+    !isValidEnumValue(sortField, TransactionSortField) ||
+    !isValidEnumValue(sortDirection, TransactionSortDirection) ||
+    !isValidEnumValue(filterState, FilterTransactionState) ||
+    !isValidEnumValue(filterSource, FilterTransactionSource) ||
+    !isValidEnumValue(filterCountable, FilterTransactionIsCountable)
+  ) {
+    return;
   }
 
   const transaction = await transactionGetByShortId(transactionShortId);
@@ -86,12 +112,17 @@ ${formatMoney(
         action,
         backLink: generateTransactionListLink({
           bankAccountShortId: bankAccountShortId,
-          page: pageString,
+          page,
           sortField,
           sortDirection,
           groupYear: year,
           groupNumber,
-          filter: transactionType,
+          filters: {
+            transactionType,
+            filterState,
+            filterSource,
+            filterCountable,
+          },
         }),
       })
     )
